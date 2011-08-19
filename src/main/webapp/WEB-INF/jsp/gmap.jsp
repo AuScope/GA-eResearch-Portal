@@ -4,7 +4,7 @@
 <!-- Credits for icons from http://www.fatcow.com/free-icons/ under http://creativecommons.org/licenses/by/3.0/us/-->
 <html xmlns:v="urn:schemas-microsoft-com:vml">
    <head>
-      <title>AuScope Discovery Portal</title>
+      <title>VDR Portal</title>
 
       <meta name="description" content="Access geoscientific information from around Australia, via AuScopes national e-Research infrastructure.">
       <meta name="keywords" content="AuScope, Discovery, Resources, GeoSciML, Mineral Occurrence, Geologic Unit, Australia">
@@ -20,22 +20,22 @@
          var NVCL_WEB_SERVICE_IP = "${nvclWebServiceIP}";
          var MAX_FEATURES = "${maxFeatureValue}";
          var WEB_CONTEXT = '<%= request.getContextPath() %>';
-         
+
       </script>
 
       <%-- CSS imports - relative paths back to the webapp directory--%>
       <jsp:include page="../../cssimports.htm"/>
       <%-- JS imports - relative paths back to the webapp directory --%>
       <jsp:include page="../../jsimports.htm"/>
-      
+
       <!-- To enable text selection within a Ext JS GridPanel -->
-	  <style type="text/css">
-	    .x-selectable, .x-selectable * {
-	        -moz-user-select: text!important;
-	        -khtml-user-select: text!important;
-	    }
-  	  </style>
-      
+      <style type="text/css">
+        .x-selectable, .x-selectable * {
+            -moz-user-select: text!important;
+            -khtml-user-select: text!important;
+        }
+        </style>
+
       <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
    </head>
 
