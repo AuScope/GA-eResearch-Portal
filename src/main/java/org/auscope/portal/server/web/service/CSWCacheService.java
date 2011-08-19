@@ -47,13 +47,13 @@ public class CSWCacheService {
     /**
      * The frequency in which the cache updates (in milli seconds).
      */
-    public static final long CACHE_UPDATE_FREQUENCY_MS = 1000L * 60L * 5L; //Set to 5 minutes
+    public static final long CACHE_UPDATE_FREQUENCY_MS = 1000L * 60L * 60L; //Set to 60 minutes
 
     protected final Log log = LogFactory.getLog(getClass());
 
 
     protected Map<String, Integer> keywordCache;
-    protected List<CSWRecord> recordCache;
+    //protected List<CSWRecord> recordCache; //disabled
     protected HttpServiceCaller serviceCaller;
     protected CSWThreadExecutor executor;
     protected CSWServiceItem[] cswServiceList;
@@ -78,7 +78,7 @@ public class CSWCacheService {
         this.executor = executor;
         this.serviceCaller = serviceCaller;
         this.keywordCache = new HashMap<String, Integer>();
-        this.recordCache = new ArrayList<CSWRecord>();
+        //this.recordCache = new ArrayList<CSWRecord>();
         this.cswServiceList = new CSWServiceItem[cswServiceList.size()];
         for (int i = 0; i < cswServiceList.size(); i++) {
             this.cswServiceList[i] = (CSWServiceItem) cswServiceList.get(i);
@@ -111,14 +111,14 @@ public class CSWCacheService {
         if (newKeywordCache != null) {
             this.keywordCache = newKeywordCache;
         }
-        if (newRecordCache != null) {
+        /*if (newRecordCache != null) {
             this.recordCache = newRecordCache;
-        }
+        }*/
 
         this.lastCacheUpdate = new Date();
 
         log.info(String.format("Keyword cache updated! Cache now has '%1$d' unique keyword names", this.keywordCache.size()));
-        log.info(String.format("Record cache updated! Cache now has '%1$d' records", this.recordCache.size()));
+        //log.info(String.format("Record cache updated! Cache now has '%1$d' records", this.recordCache.size()));
     }
 
     /**
@@ -147,11 +147,11 @@ public class CSWCacheService {
      * Returns an unmodifiable List of CSWRecords
      * @return
      */
-    public synchronized List<CSWRecord> getRecordCache() {
+    /*public synchronized List<CSWRecord> getRecordCache() {
         updateCacheIfRequired();
 
         return Collections.unmodifiableList(this.recordCache);
-    }
+    }*/
 
     /**
      * Updates the internal keyword/record cache by querying all known CSW's
@@ -190,9 +190,9 @@ public class CSWCacheService {
      * @return
      * @throws Exception
      */
-    public List<CSWRecord> getWMSRecords() throws Exception {
+    /*public List<CSWRecord> getWMSRecords() throws Exception {
         return getFilteredRecords(OnlineResourceType.WMS);
-    }
+    }*/
 
 
     /**
@@ -200,18 +200,18 @@ public class CSWCacheService {
      * @return
      * @throws Exception
      */
-    public List<CSWRecord> getWCSRecords() throws Exception {
+    /*public List<CSWRecord> getWCSRecords() throws Exception {
         return getFilteredRecords(OnlineResourceType.WCS);
-    }
+    }*/
 
     /**
      * Returns only WFS data records
      * @return
      * @throws Exception
      */
-    public List<CSWRecord> getWFSRecords() throws Exception {
+    /*public List<CSWRecord> getWFSRecords() throws Exception {
         return getFilteredRecords(OnlineResourceType.WFS);
-    }
+    }*/
 
     /**
      * Returns a filtered list of records from this cache
@@ -219,7 +219,7 @@ public class CSWCacheService {
      * @return
      * @throws Exception
      */
-    private synchronized List<CSWRecord> getFilteredRecords(
+    /*private synchronized List<CSWRecord> getFilteredRecords(
             CSWOnlineResource.OnlineResourceType... types) throws Exception {
 
         ArrayList<CSWRecord> records = new ArrayList<CSWRecord>();
@@ -232,7 +232,7 @@ public class CSWCacheService {
         }
 
         return Collections.unmodifiableList(records);
-    }
+    }*/
 
     /**
      * Our worker class for updating our CSW cache

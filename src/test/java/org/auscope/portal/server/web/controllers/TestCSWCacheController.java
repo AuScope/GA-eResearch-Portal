@@ -63,7 +63,7 @@ public class TestCSWCacheController {
         cswController = new CSWCacheController(mockCSWService, mockViewCSWRecordFactory, mockPropertyConfigurer);
     }
 
-    @Test
+    /*@Test
     public void testGetRecordResponse_Success() throws Exception {
         final StringWriter actualJSONResponse = new StringWriter();
         final ModelMap viewCSWRecord1 = new ModelMap();
@@ -132,7 +132,7 @@ public class TestCSWCacheController {
         JSONArray records = (JSONArray)jsonObj.get("data");
         Assert.assertNotNull(records);
         Assert.assertEquals(0, records.size());
-    }
+    }*/
 
     /**
      * Tests that the underlying services are called correctly and the response

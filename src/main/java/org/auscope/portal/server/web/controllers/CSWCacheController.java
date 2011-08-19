@@ -48,7 +48,7 @@ public class CSWCacheController extends BaseCSWController {
      * This controller method returns a representation of each and every CSWRecord from the internal cache
      * @throws Exception
      */
-    @RequestMapping("/getCSWRecords.do")
+    /*@RequestMapping("/getCSWRecords.do")
     public ModelAndView getCSWRecords() {
         List<CSWRecord> records = null;
         try {
@@ -58,7 +58,7 @@ public class CSWCacheController extends BaseCSWController {
             return generateJSONResponseMAV(false, new CSWRecord[] {}, "Error getting data records");
         }
         return generateJSONResponseMAV(records.toArray(new CSWRecord[records.size()]));
-    }
+    }*/
 
     /**
      * This controller method is for forcing the internal cache of CSWRecords to invalidate and update.

@@ -21,7 +21,6 @@ import org.auscope.portal.server.util.GmlToKml;
 import org.auscope.portal.server.web.service.CommodityService;
 import org.auscope.portal.server.web.service.HttpServiceCaller;
 import org.auscope.portal.server.web.service.MineralOccurrenceService;
-import org.auscope.portal.server.web.service.BoreholeService;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
@@ -66,8 +65,8 @@ public class TestEarthResourcesFilterController {
         this.httpMethodBase = context.mock(HttpMethodBase.class);
         this.mockHttpClient = context.mock(HttpClient.class);
         this.earthResourcesFilterController = new EarthResourcesFilterController(
-        		this.mineralOccurrencesResponseHandler, this.mineralOccurrenceService, 
-        		this.mockGmlToKml, this.mockCommodityService, this.mockHttpServiceCaller);
+                this.mineralOccurrencesResponseHandler, this.mineralOccurrenceService,
+                this.mockGmlToKml, this.mockCommodityService, this.mockHttpServiceCaller);
     }
 
     private void testJSONResponse(String json, Boolean success, String gml, String kml) {
@@ -107,7 +106,7 @@ public class TestEarthResourcesFilterController {
 
         context.checking(new Expectations() {{
             allowing(mockMethod).getURI();will(returnValue(new URI(serviceURL)));
-            
+
             oneOf (mineralOccurrenceService).getMineWithSpecifiedNameGML(serviceURL, mineName, 0);will(returnValue(mockMethod));
             oneOf (mockHttpServiceCaller).getHttpClient();will(returnValue(mockHttpClient));
             oneOf (mockHttpServiceCaller).getMethodResponseAsString(mockMethod, mockHttpClient); will(returnValue(xmlErrorResponse));
@@ -146,7 +145,7 @@ public class TestEarthResourcesFilterController {
 
         context.checking(new Expectations() {{
             allowing(mockMethod).getURI();will(returnValue(new URI(serviceURL)));
-            
+
             oneOf (mineralOccurrenceService).getAllMinesGML(serviceURL, 0);will(returnValue(mockMethod));
             oneOf (mockHttpServiceCaller).getHttpClient();will(returnValue(mockHttpClient));
             oneOf (mockHttpServiceCaller).getMethodResponseAsString(mockMethod, mockHttpClient); will(returnValue(xmlErrorResponse));
