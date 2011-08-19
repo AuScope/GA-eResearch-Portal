@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.auscope.portal</groupId>
-    <artifactId>AuScope-Portal</artifactId>
+    <groupId>org.auscope.vdrportal</groupId>
+    <artifactId>VDR-Portal</artifactId>
     <packaging>war</packaging>
-    <version>2.8.1</version>
-    <name>AuScope-Portal</name>
+    <version>1.0.0</version>
+    <name>VDR-Portal</name>
     <description>AuScopes flagship demonstration tool</description>
     <url>http://portal.auscope.org</url>
     <issueManagement>
@@ -16,8 +16,8 @@
         <url>http://geobuilder.arrc.csiro.au</url>
     </ciManagement>
     <scm>
-        <connection>scm:svn:https://svn.auscope.org/subversion/AuScopePortal/AuScope-Portal/trunk</connection>
-        <developerConnection>scm:svn:https://svn.auscope.org/subversion/AuScopePortal/AuScope-Portal/trunk</developerConnection>
+        <connection>scm:svn:https://svn.auscope.org/subversion/AuScopePortal/VDR-Portal/trunk</connection>
+        <developerConnection>scm:svn:https://svn.auscope.org/subversion/AuScopePortal/VDR-Portal/trunk</developerConnection>
     </scm>
     <!-- Build Configuration -->
     <organization>
@@ -34,7 +34,7 @@
         <geotools.version>2.6.5</geotools.version>
     </properties>
     <build>
-        <finalName>AuScope-Portal</finalName>
+        <finalName>VDR-Portal</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -175,8 +175,8 @@
             <name>Geo Toolkit Repository</name>
             <url>http://maven.geotoolkit.org/</url>
         </repository>
-		
-		<!-- The new home of RESTPROXY - its world readable -->
+
+        <!-- The new home of RESTPROXY - its world readable -->
         <repository>
             <id>cgsrv8.arrc.csiro.au</id>
             <name>cgsrv8.arrc.csiro.au-releases</name>
