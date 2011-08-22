@@ -24,13 +24,16 @@ public class TestCSWGetDataRecordsFilter {
                 null,
                 null,
                 null,
+                null,
                 null);
         String filterStr = filter.getFilterStringAllRecords();
         Assert.assertNotNull(filterStr);
         Assert.assertTrue(filterStr.isEmpty());
 
         //Test all set
-        filter = new CSWGetDataRecordsFilter(new FilterBoundingBox(
+        filter = new CSWGetDataRecordsFilter(
+                "any-text",
+                new FilterBoundingBox(
                     "epsg:4326",
                     new double[] {1.0, 2.0},
                     new double[] {3.0, 4.0}),
@@ -49,7 +52,7 @@ public class TestCSWGetDataRecordsFilter {
     @Test
     public void testEmptyKeywords() {
         //Test all optional
-        CSWGetDataRecordsFilter filter = new CSWGetDataRecordsFilter(null,
+        CSWGetDataRecordsFilter filter = new CSWGetDataRecordsFilter(null, null,
                 new String[] {"", null},
                 null,
                 null);

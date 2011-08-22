@@ -57,6 +57,7 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
         });
 
         //Load all components
+        this.availableComponents.push(CSWThemeFilter.Text);
         this.availableComponents.push(CSWThemeFilter.Keywords);
         this.availableComponents.push(CSWThemeFilter.Spatial);
 
