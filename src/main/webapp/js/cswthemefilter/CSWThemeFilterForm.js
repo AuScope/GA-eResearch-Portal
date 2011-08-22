@@ -62,12 +62,13 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
 
         //Build our configuration
         Ext.apply(cfg, {
+            hideBorders : true,
             items : [{
                 xtype : 'fieldset',
-                title : 'CSW Theme Filter',
                 hideBorders : true,
                 items : [{
                     xtype : 'combo',
+                    hideBorders : true,
                     fieldLabel : 'Theme',
                     name : 'theme',
                     store : this.themeStore,
