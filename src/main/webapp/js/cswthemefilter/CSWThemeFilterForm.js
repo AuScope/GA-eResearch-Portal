@@ -71,6 +71,7 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
                     xtype : 'combo',
                     hideBorders : true,
                     fieldLabel : 'Theme',
+                    anchor : '100%',
                     name : 'theme',
                     store : this.themeStore,
                     forceSelection : true,

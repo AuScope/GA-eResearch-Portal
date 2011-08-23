@@ -1141,10 +1141,11 @@ Ext.onReady(function() {
             return map;
         },
         buttonAlign : 'right',
-        buttons: [{
+        footerStyle : 'padding:0px 0px 0px 0px',
+        fbar: [{
             xtype : 'button',
             text : 'Search',
-            pressed : true,
+            //pressed : true,
             iconCls : 'find',
             handler : function() {
                 var filterPanel = Ext.getCmp('csw-filter-panel');

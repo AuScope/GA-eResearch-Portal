@@ -61,4 +61,19 @@ public class TestCSWGetDataRecordsFilter {
         Assert.assertTrue(filterStr.isEmpty());
     }
 
+    /**
+     * Tests that an empty AnyText string doesn't generate a filter
+     */
+    @Test
+    public void testEmptyAnyText() {
+        CSWGetDataRecordsFilter filter = new CSWGetDataRecordsFilter("",
+                null,
+                null,
+                null,
+                null);
+        String filterStr = filter.getFilterStringAllRecords();
+        Assert.assertNotNull(filterStr);
+        Assert.assertTrue(filterStr.isEmpty());
+    }
+
 }
