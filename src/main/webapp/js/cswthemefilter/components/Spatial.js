@@ -148,10 +148,10 @@ CSWThemeFilter.Spatial = Ext.extend(CSWThemeFilter.BaseComponent, {
      * Handler for the draw bounds function
      */
     _drawBoundsHandler : function() {
-        this.numberFieldNELat.setValue(Number.NaN);
-        this.numberFieldNELon.setValue(Number.NaN);
-        this.numberFieldSWLat.setValue(Number.NaN);
-        this.numberFieldSWLon.setValue(Number.NaN);
+        this.numberFieldNELat.setRawValue(Number.NaN);
+        this.numberFieldNELon.setRawValue(Number.NaN);
+        this.numberFieldSWLat.setRawValue(Number.NaN);
+        this.numberFieldSWLon.setRawValue(Number.NaN);
 
 
         if (!this.bboxSelection.transMarkerEnabled) {
