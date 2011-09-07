@@ -39,6 +39,7 @@ MultiCSWFilterResultsPanel = Ext.extend(Ext.TabPanel, {
         Ext.apply(cfg, {
             autoScroll : true,
             activeTab : 0,
+			enableTabScroll : true,
             items : resultBrowsers
         });
 
