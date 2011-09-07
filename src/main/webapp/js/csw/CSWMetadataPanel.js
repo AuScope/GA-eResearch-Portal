@@ -35,7 +35,8 @@ CSWMetadataPanel = Ext.extend(Ext.Panel, {
                 hideBorders : true,
                 autoHeight : true,
                 region : 'north',
-                items : [{
+                items : [
+                /*{
                     xtype : 'box',
                     anchor : '',
                     isFormField : true,
@@ -50,7 +51,9 @@ CSWMetadataPanel = Ext.extend(Ext.Panel, {
                             html : 'Link back to registry'
                         }]
                     }
-                },{
+                },*/ //VT: temporary removed on RW's request
+                
+                {
                     xtype : 'label',
                     fieldLabel : 'Title',
                     anchor : '100%',
