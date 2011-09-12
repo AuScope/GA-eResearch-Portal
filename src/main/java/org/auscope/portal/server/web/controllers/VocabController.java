@@ -254,4 +254,23 @@ public class VocabController extends BasePortalController {
 
         return generateJSONResponseMAV(true, dataItems, "");
     }
+    
+	/**
+	 * this is just an example to show we can display specific filter for
+	 * specific theme filtering
+	 * 
+	 * @param
+	 */
+	@RequestMapping("getSensorType.do")
+	public ModelAndView getSensorType() throws Exception {
+		ModelMap type1 = new ModelMap("type", "mytype1");
+		ModelMap type2 = new ModelMap("type", "mytype2");
+
+		// Simplify our concepts for the GUI
+		List<ModelMap> dataItems = new ArrayList<ModelMap>();
+		dataItems.add(type1);
+		dataItems.add(type2);
+
+		return generateJSONResponseMAV(true, dataItems, "");
+	}
 }

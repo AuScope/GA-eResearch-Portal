@@ -60,14 +60,28 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
         this.availableComponents.push(CSWThemeFilter.Text);
         this.availableComponents.push(CSWThemeFilter.Keywords);
         this.availableComponents.push(CSWThemeFilter.Spatial);
+        this.availableComponents.push(CSWThemeFilter.SensorType);
 
         //Build our configuration
         Ext.apply(cfg, {
-            hideBorders : true,
+            hideBorders : false,
             items : [{
                 xtype : 'fieldset',
-                hideBorders : true,
-                items : [{
+                hideBorders : false,
+ 
+                listeners : {
+                    afterrender : function() {
+                        cswThemeFilterForm.cswServiceItemStore.load({
+                            callback : cswThemeFilterForm._updateCSWList.createDelegate(cswThemeFilterForm)
+                        });
+                    }
+                }
+            },{
+            	xtype: 'fieldset',
+            	title: 'Filtering on Theme',
+            	id: 'cbxTheme',
+            	hideBorders: true,
+            	items : [{
                     xtype : 'combo',
                     hideBorders : true,
                     fieldLabel : 'Theme',
@@ -111,14 +125,7 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
                             cswThemeFilterForm.doLayout();
                         }
                     }
-                }],
-                listeners : {
-                    afterrender : function() {
-                        cswThemeFilterForm.cswServiceItemStore.load({
-                            callback : cswThemeFilterForm._updateCSWList.createDelegate(cswThemeFilterForm)
-                        });
-                    }
-                }
+                }]
             }]
         });
 
@@ -132,8 +139,8 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
      * Returns an array of BaseComponent objects.
      */
     _getBaseComponents : function() {
-        var parentFieldSet = this.findByType('fieldset')[0];
-        return parentFieldSet.items.filterBy(function(item) {
+        var parentFieldSet = this.findById('cbxTheme');        
+        return parentFieldSet.items.filterBy(function(item) {        	
             return item.isBaseComponent;
         });
     },
@@ -146,7 +153,7 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
         var components = this._getBaseComponents();
 
         for (var i = 0; i < components.getCount(); i++) {
-            var cmp = components.get(i);
+            var cmp = components.get(i);           
             var parent = cmp.ownerCt;
             var obj = parent.remove(cmp);
         }

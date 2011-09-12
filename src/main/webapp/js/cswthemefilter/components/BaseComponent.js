@@ -55,7 +55,16 @@ CSWThemeFilter.BaseComponent = Ext.extend(Ext.form.FieldSet, {
         }
 
         return true;
-    }
+    },
+    
+    containUrn : function(urns, urn) {
+		for ( var i = 0; i < urns.length; i++) {
+			if (urn == urns[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 
 });
