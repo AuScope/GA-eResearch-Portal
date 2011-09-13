@@ -8,6 +8,7 @@ var mapInfoWindowManager = null;
 var map;
 
 //Send these headers with every AJax request we make...
+//VT:chrome doesn't like this header: Refused to set unsafe header "Accept-Encoding"
 Ext.Ajax.defaultHeaders = {
     'Accept-Encoding': 'gzip, deflate' //This ensures we use gzip for most of our requests (where available)
 };

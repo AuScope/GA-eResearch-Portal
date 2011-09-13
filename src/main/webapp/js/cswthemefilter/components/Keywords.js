@@ -38,7 +38,8 @@ CSWThemeFilter.Keywords = Ext.extend(CSWThemeFilter.BaseComponent, {
             collapsible : true,
             border : false,
             items : [{
-                xtype : 'form',
+                xtype : 'panel',
+                layout: 'form',
                 border : false,
                 items : [{
                     xtype : 'combo',
