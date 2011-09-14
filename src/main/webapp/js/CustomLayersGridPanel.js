@@ -94,10 +94,12 @@ CustomLayersGridPanel = function(id, title, description, cswRecordStore, addLaye
 
         ],
         bbar: [{
+        	xtype: 'tbfill'
+    	},{
             text:'Add Layer to Map',
             tooltip:'Add Layer to Map',
             iconCls:'add',
-            pressed: true,
+            //pressed: true,
             region :'south',
             scope : this,
             handler: function() {
