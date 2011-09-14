@@ -42,6 +42,10 @@
             <list>
                 <ref bean="cswAuscopeTest" />
                 <ref bean="cswMDUTest" />
+				<ref bean="cswGAPetroleumTest" />
+                <ref bean="cswGAEODSTest" />
+                <ref bean="cswGAGeoCATTest" />
+                <ref bean="cswC3DMMTest" />
             </list>
         </constructor-arg>
     </bean>
