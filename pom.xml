@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.auscope.vdrportal</groupId>
-    <artifactId>VDR-Portal</artifactId>
+    <artifactId>GA-Portal</artifactId>
     <packaging>war</packaging>
     <version>1.0.0</version>
-    <name>VDR-Portal</name>
+    <name>GA-Portal</name>
     <description>AuScopes flagship demonstration tool</description>
     <url>http://portal.auscope.org</url>
     <issueManagement>
@@ -16,8 +16,8 @@
         <url>http://geobuilder.arrc.csiro.au</url>
     </ciManagement>
     <scm>
-        <connection>scm:svn:https://svn.auscope.org/subversion/AuScopePortal/VDR-Portal/trunk</connection>
-        <developerConnection>scm:svn:https://svn.auscope.org/subversion/AuScopePortal/VDR-Portal/trunk</developerConnection>
+        <connection>scm:svn:https://svn.auscope.org/subversion/AuScopePortal/GA-eResearch-Portal/trunk</connection>
+        <developerConnection>scm:svn:https://svn.auscope.org/subversion/AuScopePortal/GA-eResearch-Portal/trunk</developerConnection>
     </scm>
     <!-- Build Configuration -->
     <organization>
@@ -34,7 +34,7 @@
         <geotools.version>2.6.5</geotools.version>
     </properties>
     <build>
-        <finalName>VDR-Portal</finalName>
+        <finalName>GA-Portal</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
