@@ -25,7 +25,7 @@
     </bean>
     <bean id="cswAuscopeTest" class="org.auscope.portal.server.web.service.CSWServiceItem">
         <constructor-arg name="id" value="cswAuscopeTest"/>
-        <constructor-arg name="title" value="AuScope Test Geonetwork"/>
+        <constructor-arg name="title" value="AuScope"/>
         <constructor-arg name="serviceUrl" value="http://auscope-portal-2.arrc.csiro.au/geonetwork/srv/en/csw"/>
         <constructor-arg name="recordInformationUrl" value="http://auscope-portal-2.arrc.csiro.au/geonetwork/srv/en/main.home?uuid=%1$s"/>
     </bean>
@@ -37,10 +37,30 @@
     </bean>
     <bean id="cswMDUTest" class="org.auscope.portal.server.web.service.CSWServiceItem">
         <constructor-arg name="id" value="cswMDUTest"/>
-        <constructor-arg name="title" value="MDU Test Geonetwork"/>
+        <constructor-arg name="title" value="MDU"/>
         <constructor-arg name="serviceUrl" value="http://mdu-data-2.arrc.csiro.au/geonetwork/srv/en/csw"/>
         <constructor-arg name="recordInformationUrl" value="http://mdu-data-2.arrc.csiro.au/geonetwork/srv/en/metadata.show?uuid=%1$s"/>
     </bean>
+
+    <bean id="cswGAEODSTest" class="org.auscope.portal.server.web.service.CSWServiceItem">
+        <constructor-arg name="id" value="cswGAEODSTest"/>
+        <constructor-arg name="title" value="GA EODS"/>
+        <constructor-arg name="serviceUrl" value="http://apacsrv2.arrc.csiro.au:8080/geonetwork/srv/en/csw"/>
+        <constructor-arg name="recordInformationUrl" value="http://apacsrv2.arrc.csiro.au:8080/geonetwork/srv/en/metadata.show?uuid=%1$s"/>
+    </bean>
+    <bean id="cswGAGeoCATTest" class="org.auscope.portal.server.web.service.CSWServiceItem">
+        <constructor-arg name="id" value="cswGAGeoCATTest"/>
+        <constructor-arg name="title" value="GA GeoCat/GeoMet"/>
+        <constructor-arg name="serviceUrl" value="http://www.ga.gov.au/geonetwork/srv/en/csw"/>
+        <constructor-arg name="recordInformationUrl" value="http://www.ga.gov.au/geonetwork/srv/en/metadata.show?uuid=%1$s"/>
+    </bean>
+    <bean id="cswC3DMMTest" class="org.auscope.portal.server.web.service.CSWServiceItem">
+        <constructor-arg name="id" value="cswC3DMMTest"/>
+        <constructor-arg name="title" value="C3DMM"/>
+        <constructor-arg name="serviceUrl" value="http://c3dmm2.ivec.org/geonetwork/srv/en/csw"/>
+        <constructor-arg name="recordInformationUrl" value="http://c3dmm2.ivec.org/geonetwork/srv/en/metadata.show?uuid=%1$s"/>
+    </bean>
+
     <bean id="cswMDUProduction" class="org.auscope.portal.server.web.service.CSWServiceItem">
         <constructor-arg name="id" value="cswMDUProduction"/>
         <constructor-arg name="title" value="MDU Geonetwork"/>
@@ -55,7 +75,7 @@
     </bean>
     <bean id="cswGAPetroleumTest" class="org.auscope.portal.server.web.service.CSWServiceItem">
         <constructor-arg name="id" value="cswGAPetroleumTest"/>
-        <constructor-arg name="title" value="GA Petroleum Geonetwork"/>
+        <constructor-arg name="title" value="GA Petroleum Reports"/>
         <constructor-arg name="serviceUrl" value="http://auscope-portal-dev.arrc.csiro.au/geonetwork/srv/en/csw"/>
         <constructor-arg name="recordInformationUrl" value="http://auscope-portal-dev.arrc.csiro.au/geonetwork/srv/en/main.home?uuid=%1$s"/>
     </bean>
