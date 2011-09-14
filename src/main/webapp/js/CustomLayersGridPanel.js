@@ -30,7 +30,7 @@ CustomLayersGridPanel = function(id, title, description, cswRecordStore, addLaye
         title            : '<span qtip="' + description + '">' + title + '</span>',
         region           :'north',
         split            : true,
-        height           : 160,
+        height           : 425,
         //width: 80,
         autoScroll       : true,
         store            : cswRecordStore,
