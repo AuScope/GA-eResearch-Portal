@@ -7,7 +7,7 @@
       <div id="menu">
          <ul >
             <li ><a href="http://ga.gov.au/">Geoscience Australia<span></span></a></li>
-            <li <%if (request.getRequestURL().toString().contains("/gmap.")) {%>class="current" <%} %>><a href="gmap.html">GA Portal<span></span></a></li>
+            <li <%if (request.getRequestURL().toString().contains("/gmap.")) {%>class="current" <%} %>><a href="gmap.html">E-Research Portal<span></span></a></li>
             <li <%if (request.getRequestURL().toString().contains("/links.")) {%>class="current" <%} %>><a href="links.html">Links<span></span></a></li>
          </ul>
       </div>
