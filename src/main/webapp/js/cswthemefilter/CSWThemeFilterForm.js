@@ -106,8 +106,8 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
                             '</tpl>'),
                     listeners : {
                         // On selection update our list of active base components
-                        select : function(combo, record, index) {
-                            cswThemeFilterForm._clearBaseComponents();
+                        select : function(combo, record, index) {                            
+            				var newComponents=[];
                             if (record) {
                                 var urn = record.get('urn');
                                 for (var i = 0; i < cswThemeFilterForm.availableComponents.length; i++) {
@@ -116,12 +116,13 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
                                         map : cswThemeFilterForm.getMapFn()
                                     });
                                     if (cmp.supportsTheme(urn)) {
-                                        this.ownerCt.add(cmp);
+                                    	newComponents.push(cmp);                                      
                                     } else {
                                         cmp.destroy();
                                     }
                                 }
                             }
+                            cswThemeFilterForm._addBaseComponents(this,newComponents);
                             cswThemeFilterForm.doLayout();
                         }
                     }
@@ -149,14 +150,47 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
      * Deletes all BaseComponents (excluding the Theme Combo) from a
      * CSWThemeFilterForm
      */
-    _clearBaseComponents : function() {
+    _addBaseComponents : function(obj,newCmps) {
         var components = this._getBaseComponents();
-
-        for (var i = 0; i < components.getCount(); i++) {
-            var cmp = components.get(i);           
-            var parent = cmp.ownerCt;
-            var obj = parent.remove(cmp);
+        var parentFieldSet = this.findById('cbxTheme');    
+        
+        //remove all components that is not preserved
+        var preservedComponents = [];
+        
+        for(var i=0; i < components.getCount();i++){    
+        	var cmp=components.get(i);
+        	if(cmp.isPreserved() && this._componentInList(newCmps,cmp)){
+        		//do nothing;
+        		preservedComponents.push(cmp);
+        	}else{
+        		var parent = cmp.ownerCt;
+        		cmp.cleanUp(this);
+				var obj = parent.remove(cmp);
+        	}
+        }               
+        
+        //add the components in
+        for(var j=0; j < newCmps.length;j++){
+        	var newCmp=newCmps[j];
+        	if(!this._componentInList(preservedComponents,newCmp)){
+        			parentFieldSet.add(newCmps[j]);
+        		
+        	}
         }
+        
+    },
+    
+    /**
+     * Private function to check if a specific component exists in the list.
+     */
+    
+    _componentInList : function(list,cmp){
+    	for(var i=0;i < list.length;i++){
+    		if(cmp.constructor==list[i].constructor){
+    			return true;
+    		}
+    	}
+    	return false;
     },
 
     /**

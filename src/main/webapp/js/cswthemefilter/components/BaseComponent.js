@@ -57,6 +57,24 @@ CSWThemeFilter.BaseComponent = Ext.extend(Ext.form.FieldSet, {
         return true;
     },
     
+    /**
+	 * allows the component and its state to be preserved
+	 */
+	isPreserved : function(urn) {
+		return false;
+	},
+
+	/**
+	 * Function used for cleaning when the component is no longer in used.
+	 */
+	cleanUp : function() {
+		return {};
+	},
+    
+    /**
+	 * Checks returns whether the given urn is supported in the list of urns
+	 * 
+	 */
     containUrn : function(urns, urn) {
 		for ( var i = 0; i < urns.length; i++) {
 			if (urn == urns[i]) {
@@ -65,6 +83,8 @@ CSWThemeFilter.BaseComponent = Ext.extend(Ext.form.FieldSet, {
 		}
 		return false;
 	}
+    
+    
 
 
 });

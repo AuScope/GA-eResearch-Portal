@@ -72,6 +72,9 @@ CSWThemeFilter.SensorType = Ext.extend(CSWThemeFilter.BaseComponent, {
  
     /**
 	 * The Keywords component supports all URN's
+	 * Current unsure how Josh wants to do this. If we are going to hardcode the allowed urn, then 
+	 * it will probably be best to rewrite supportTheme in the parent class and the list of urns allowed
+	 * will be specific in the concrete class.
 	 */
     supportsTheme : function(urn) {   
     	return CSWThemeFilter.SensorType.superclass.containUrn.call(this,this.supportedURN,urn);

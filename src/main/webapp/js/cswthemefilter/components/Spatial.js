@@ -4,6 +4,7 @@ Ext.namespace("CSWThemeFilter");
  * An extension of CSWThemeFilter.BaseComponent to allow the selection of a spatial bounding box
  */
 CSWThemeFilter.Spatial = Ext.extend(CSWThemeFilter.BaseComponent, {
+	
     /**
      * An instance of MPolyDragControl
      */
@@ -218,6 +219,23 @@ CSWThemeFilter.Spatial = Ext.extend(CSWThemeFilter.BaseComponent, {
      * The Spatial component supports all URN's
      */
     supportsTheme : function(urn) {
+    	//VT:temporary disable spatial filter on build environment to demostrate that if a theme
+    	//that doesn't support spatial is selected, the bounding box will clear up.
+    	if(urn=='http://ga.gov.au/darwin/built-env'){
+    		return false;
+    	}
+    	return true;
+    },
+    
+    isPreserved : function(urn) {        
         return true;
+    },
+    
+    
+    /**
+     * Overrides the parent cleanup specifically for spatial component.
+     */
+    cleanUp : function() {
+    	this._clearBoundsHandler();
     }
 });
