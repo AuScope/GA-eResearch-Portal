@@ -1183,7 +1183,7 @@ Ext.onReady(function() {
     // a form for filtering records from a CSW and then displaying the results
     var cswFilterPanel = new CSWThemeFilterForm({
         id : 'csw-filter-panel',
-        title : 'CSW Theme Filter',
+        title : 'Theme Filter',
         region:'north',
         split: true,
         height: 425,
