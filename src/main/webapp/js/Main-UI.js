@@ -23,7 +23,7 @@ Ext.onReady(function() {
     //Generate our data stores
     var activeLayersStore = new ActiveLayersStore();
     var customLayersStore = new CSWRecordStore('getCustomLayers.do');
-    
+
     //Called whenever any of the CSWPanels click 'Add to Map'
     //defaultVisibility [boolean] - Optional - Set this to override the visibility setting for the new layer
     var cswPanelAddHandler = function(cswRecord, defaultVisibility, deferLayerLoad) {
@@ -114,54 +114,54 @@ Ext.onReady(function() {
             }
         }
     };
-    
+
     //Pans the map so that all bboxes linked to this record are visible.
     //If currentBounds is specified
     var moveToBoundsCSWRecord = function(cswRecord) {
-    	var bboxExtent = cswRecord.generateGeographicExtent();
+        var bboxExtent = cswRecord.generateGeographicExtent();
 
-    	if (!bboxExtent) {
-    		return;
-    	}
+        if (!bboxExtent) {
+            return;
+        }
 
-    	moveMapToBounds(bboxExtent);
+        moveMapToBounds(bboxExtent);
     };
-    
+
   //Given a CSWRecord, show (on the map) the list of bboxes associated with that record temporarily
     //bboxOverlayManager - if specified, will be used to store the overlays, otherwise the cswRecord's
     //                      bboxOverlayManager will be used
     var showBoundsCSWRecord = function(cswRecord, bboxOverlayManager) {
-    	var geoEls = cswRecord.getGeographicElements();
+        var geoEls = cswRecord.getGeographicElements();
 
-    	if (!bboxOverlayManager) {
-	    	bboxOverlayManager = cswRecord.getBboxOverlayManager();
-	    	if (bboxOverlayManager) {
-	    		bboxOverlayManager.clearOverlays();
-	    	} else {
-	    		bboxOverlayManager = new OverlayManager(map);
-	    		cswRecord.setBboxOverlayManager(bboxOverlayManager);
-	    	}
-    	}
+        if (!bboxOverlayManager) {
+            bboxOverlayManager = cswRecord.getBboxOverlayManager();
+            if (bboxOverlayManager) {
+                bboxOverlayManager.clearOverlays();
+            } else {
+                bboxOverlayManager = new OverlayManager(map);
+                cswRecord.setBboxOverlayManager(bboxOverlayManager);
+            }
+        }
 
-    	//Iterate our geographic els to get our list of bboxes
-    	for (var i = 0; i < geoEls.length; i++) {
-    		var geoEl = geoEls[i];
-    		if (geoEl instanceof BBox) {
-    			var polygonList = geoEl.toGMapPolygon('00FF00', 0, 0.7,'#00FF00', 0.6);
+        //Iterate our geographic els to get our list of bboxes
+        for (var i = 0; i < geoEls.length; i++) {
+            var geoEl = geoEls[i];
+            if (geoEl instanceof BBox) {
+                var polygonList = geoEl.toGMapPolygon('00FF00', 0, 0.7,'#00FF00', 0.6);
 
-        	    for (var j = 0; j < polygonList.length; j++) {
-        	    	polygonList[j].title = 'bbox';
-        	    	bboxOverlayManager.addOverlay(polygonList[j]);
-        	    }
-    		}
-    	}
+                for (var j = 0; j < polygonList.length; j++) {
+                    polygonList[j].title = 'bbox';
+                    bboxOverlayManager.addOverlay(polygonList[j]);
+                }
+            }
+        }
 
-    	//Make the bbox disappear after a short while
-    	var clearTask = new Ext.util.DelayedTask(function(){
-    		bboxOverlayManager.clearOverlays();
-    	});
+        //Make the bbox disappear after a short while
+        var clearTask = new Ext.util.DelayedTask(function(){
+            bboxOverlayManager.clearOverlays();
+        });
 
-    	clearTask.delay(2000);
+        clearTask.delay(2000);
     };
 
     //Returns an object
@@ -1184,20 +1184,18 @@ Ext.onReady(function() {
     var cswFilterPanel = new CSWThemeFilterForm({
         id : 'csw-filter-panel',
         title : 'Theme Filter',
-        region:'north',
-        split: true,
         height: 425,
         autoScroll: true,
         getMapFn : function() {
             return map;
         },
-       
+
         bbar: [{
-        	xtype: 'tbfill'
-        	},{
+            xtype: 'tbfill'
+            },{
             xtype : 'button',
-            text : 'Search',    
-            
+            text : 'Search',
+
             //pressed : true,
             iconCls : 'find',
             handler : function() {
@@ -1255,23 +1253,22 @@ Ext.onReady(function() {
             }
         }]
     });
-    
+
     var customLayersPanel = new CustomLayersGridPanel('custom-layers-panel',
-    		'Custom Layers',
-    		'Add your own WMS Layers',
-    		customLayersStore,
-    		cswPanelAddHandler,
-    		showBoundsCSWRecord,
-    		moveToBoundsCSWRecord);
-    
+            'Custom Layers',
+            'Add your own WMS Layers',
+            customLayersStore,
+            cswPanelAddHandler,
+            showBoundsCSWRecord,
+            moveToBoundsCSWRecord);
+
  // basic tabs 1, built from existing content
     var tabsPanel = new Ext.TabPanel({
         //width:450,
         activeTab: 0,
         region:'north',
         split: true,
-        //height: 225,
-        autoHeight: true,
+        height: 425,
         autoScroll: true,
         enableTabScroll: true,
         //autosize:true,
@@ -1280,8 +1277,8 @@ Ext.onReady(function() {
             customLayersPanel
         ]
     });
-    
-    
+
+
 
     /**
      * Used as a placeholder for the tree and details panel on the left of screen
