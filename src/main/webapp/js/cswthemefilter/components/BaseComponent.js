@@ -5,12 +5,6 @@ Ext.namespace("CSWThemeFilter");
  * The 'abstract' base component for all CSWThemeFilterForm components to extend from
  */
 CSWThemeFilter.BaseComponent = Ext.extend(Ext.form.FieldSet, {
-
-    /**
-     * An instance of GMap2
-     */
-    map : null,
-
     /**
      * Constructor for this class, accepts all configuration options that can
      * be specified for a Ext.form.FieldSet as well as the following extensions
@@ -19,13 +13,11 @@ CSWThemeFilter.BaseComponent = Ext.extend(Ext.form.FieldSet, {
      * }
      */
     constructor : function(cfg) {
-        this.map = cfg.map;
 
         Ext.apply(cfg, {
             autoDestroy : true, //Ensure that as components get removed they are also destroyed
             isBaseComponent : true //how we identify base components
         }, {
-            collapsed : true,
             style:'padding:5px 10px 0px 10px'
         });
         CSWThemeFilter.BaseComponent.superclass.constructor.call(this, cfg);
@@ -56,35 +48,17 @@ CSWThemeFilter.BaseComponent = Ext.extend(Ext.form.FieldSet, {
 
         return true;
     },
-    
-    /**
-	 * allows the component and its state to be preserved
-	 */
-	isPreserved : function(urn) {
-		return false;
-	},
 
-	/**
-	 * Function used for cleaning when the component is no longer in used.
-	 */
-	cleanUp : function() {
-		return {};
-	},
-    
     /**
-	 * Checks returns whether the given urn is supported in the list of urns
-	 * 
-	 */
+     * Checks returns whether the given urn is supported in the list of urns
+     *
+     */
     containUrn : function(urns, urn) {
-		for ( var i = 0; i < urns.length; i++) {
-			if (urn == urns[i]) {
-				return true;
-			}
-		}
-		return false;
-	}
-    
-    
-
-
+        for ( var i = 0; i < urns.length; i++) {
+            if (urn == urns[i]) {
+                return true;
+            }
+        }
+        return false;
+    }
 });

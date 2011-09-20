@@ -6,22 +6,16 @@
  */
 CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
 
-    availableComponents : [],
+    themeComponents : [],
     themeStore : null,
     cswServiceItemStore : null,
-    getMapFn : null,
 
     /**
      * Constructor for this class, accepts all configuration options that can be
      * specified for a Ext.form.FormPanel as well as the following extensions
-     * {
-     *  getMapFn : [Required] A function which returns an instance of GMap2 that may be utilised by child components
-     * }
      */
     constructor : function(cfg) {
         var cswThemeFilterForm = this;  //To maintain our scope in callbacks
-
-        this.getMapFn = cfg.getMapFn;
 
         //Load our list of themes
         this.themeStore = new Ext.data.Store({
@@ -51,37 +45,32 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
                 fields          : [
                     'id',
                     'title',
-                    'url'
+                    'url',
+                    'selectedByDefault'
                 ]
             })
         });
 
-        //Load all components
-        this.availableComponents.push(CSWThemeFilter.Text);
-        this.availableComponents.push(CSWThemeFilter.Keywords);
-        this.availableComponents.push(CSWThemeFilter.Spatial);
-        this.availableComponents.push(CSWThemeFilter.SensorType);
+        //Load all components that can be selected in relation to a theme specific selection
+        this.themeComponents.push(CSWThemeFilter.SensorType);
 
         //Build our configuration
         Ext.apply(cfg, {
-            hideBorders : false,
+            hideBorders : true,
             items : [{
-                xtype : 'fieldset',
-                hideBorders : false,
- 
-                listeners : {
-                    afterrender : function() {
-                        cswThemeFilterForm.cswServiceItemStore.load({
-                            callback : cswThemeFilterForm._updateCSWList.createDelegate(cswThemeFilterForm)
-                        });
-                    }
-                }
-            },{
-            	xtype: 'fieldset',
-            	title: 'Filtering on Theme',
-            	id: 'cbxTheme',
-            	hideBorders: true,
-            	items : [{
+                xtype : 'spacer',
+                height : 5
+            },
+            new CSWThemeFilter.Text({}), //This component is 'generic' and used by all CSW filters
+            new CSWThemeFilter.Keywords({}), //This component is 'generic' and used by all CSW filters
+            new CSWThemeFilter.Spatial({collapsed : true}), //This component is 'generic' and used by all CSW filters
+            {
+                xtype: 'fieldset',
+                title: 'Search by Theme',
+                collapsible : true,
+                collapsed : true,
+                hideBorders: true,
+                items : [{
                     xtype : 'combo',
                     hideBorders : true,
                     fieldLabel : 'Theme',
@@ -106,27 +95,39 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
                             '</tpl>'),
                     listeners : {
                         // On selection update our list of active base components
-                        select : function(combo, record, index) {                            
-            				var newComponents=[];
+                        select : function(combo, record, index) {
+                            cswThemeFilterForm._clearThemeComponents();
                             if (record) {
                                 var urn = record.get('urn');
-                                for (var i = 0; i < cswThemeFilterForm.availableComponents.length; i++) {
+                                for (var i = 0; i < cswThemeFilterForm.themeComponents.length; i++) {
                                     //Only add components that support the newly selected theme
-                                    var cmp = new cswThemeFilterForm.availableComponents[i]({
-                                        map : cswThemeFilterForm.getMapFn()
-                                    });
+                                    //(components that are always visible are added elsewhere)
+                                    var cmp = new cswThemeFilterForm.themeComponents[i]({});
                                     if (cmp.supportsTheme(urn)) {
-                                    	newComponents.push(cmp);                                      
+                                        this.ownerCt.add(cmp);
                                     } else {
                                         cmp.destroy();
                                     }
                                 }
                             }
-                            cswThemeFilterForm._addBaseComponents(this,newComponents);
                             cswThemeFilterForm.doLayout();
                         }
                     }
                 }]
+            },{
+                xtype : 'fieldset',
+                title : 'Locations to search',
+                collapsible : true,
+                collapsed : true,
+                hideBorders : false,
+
+                listeners : {
+                    afterrender : function() {
+                        cswThemeFilterForm.cswServiceItemStore.load({
+                            callback : cswThemeFilterForm._updateCSWList.createDelegate(cswThemeFilterForm)
+                        });
+                    }
+                }
             }]
         });
 
@@ -135,63 +136,71 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
     },
 
     /**
-     * Gets every BaseComponent instance that is added to this form's fieldset
-     *
-     * Returns an array of BaseComponent objects.
+     * Gets the parent field set containing all repositories to be searched
      */
-    _getBaseComponents : function() {
-        var parentFieldSet = this.findById('cbxTheme');        
-        return parentFieldSet.items.filterBy(function(item) {        	
-            return item.isBaseComponent;
-        });
+    _getRepositoryFieldSet : function() {
+        return this.items.get(this.items.getCount() - 1);
     },
 
     /**
-     * Deletes all BaseComponents (excluding the Theme Combo) from a
-     * CSWThemeFilterForm
+     * Gets the parent field set containing the them selection
      */
-    _addBaseComponents : function(obj,newCmps) {
-        var components = this._getBaseComponents();
-        var parentFieldSet = this.findById('cbxTheme');    
-        
-        //remove all components that is not preserved
-        var preservedComponents = [];
-        
-        for(var i=0; i < components.getCount();i++){    
-        	var cmp=components.get(i);
-        	if(cmp.isPreserved() && this._componentInList(newCmps,cmp)){
-        		//do nothing;
-        		preservedComponents.push(cmp);
-        	}else{
-        		var parent = cmp.ownerCt;
-        		cmp.cleanUp(this);
-				var obj = parent.remove(cmp);
-        	}
-        }               
-        
-        //add the components in
-        for(var j=0; j < newCmps.length;j++){
-        	var newCmp=newCmps[j];
-        	if(!this._componentInList(preservedComponents,newCmp)){
-        			parentFieldSet.add(newCmps[j]);
-        		
-        	}
-        }
-        
+    _getThemeFieldSet : function() {
+        return this.items.get(this.items.getCount() - 2);
     },
-    
+
     /**
-     * Private function to check if a specific component exists in the list.
+     * Can be called on any object type
+     *
+     * Tests to see if item is an instance of a BaseComponent class
      */
-    
-    _componentInList : function(list,cmp){
-    	for(var i=0;i < list.length;i++){
-    		if(cmp.constructor==list[i].constructor){
-    			return true;
-    		}
-    	}
-    	return false;
+    _isBaseComponentFilterFn : function(item) {
+        return item.isBaseComponent;
     },
+
+    /**
+     * Gets every BaseComponent instance that is added to this form's fieldset
+     *
+     * returns an Ext.util.MixedCollection
+     */
+    _getThemeComponents : function() {
+        var parentFieldSet = this._getThemeFieldSet();
+        return parentFieldSet.items.filterBy(this._isBaseComponentFilterFn);
+    },
+
+    /**
+     * Removes every component that would be returned by _getThemeComponents
+     */
+    _clearThemeComponents : function() {
+        var components = this._getThemeComponents();
+
+        for (var i = 0; i < components.getCount(); i++) {
+            var cmp = components.get(i);
+            var parent = cmp.ownerCt;
+            var obj = parent.remove(cmp);
+        }
+    },
+
+    /**
+     * Returns every instance of a BaseComponent object that is a child of this object as an Array
+     */
+    _getAllBaseComponents : function() {
+        var defaultComponents = this.items.filterBy(this._isBaseComponentFilterFn);
+        var themeComponents = this._getThemeComponents();
+        var result = [];
+
+        //Concat our collections into an array
+        defaultComponents.each(function(item) {
+            result.push(item);
+        });
+        themeComponents.each(function(item) {
+            result.push(item);
+        });
+
+        return result;
+    },
+
+
 
     /**
      * Updates the list of CSW services available checkbox group (if this form is yet to be rendered this function has no effect)
@@ -202,7 +211,7 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
         }
 
         //delete our checkbox group (if it exists)
-        var parentFieldSet = this.findByType('fieldset')[0];
+        var parentFieldSet = this._getRepositoryFieldSet();
         var checkBoxItems = parentFieldSet.findByType('checkboxgroup');
         for (var i = 0; i < checkBoxItems.length; i++) {
             var cmp = checkBoxItems[i];
@@ -217,7 +226,7 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
             checkBoxItems.push({
                 boxLabel : cswServiceItemRec.get('title'),
                 name : cswServiceItemRec.get('id'),
-                checked : true
+                checked : cswServiceItemRec.get('selectedByDefault')
             });
         }
         parentFieldSet.insert(1, {
@@ -237,10 +246,10 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
      * Returns a javascript object
      */
     generateCSWFilterParameters : function() {
-        var components = this._getBaseComponents();
+        var components = this._getAllBaseComponents();
         var filterParams = {};
-        for (var i = 0; i < components.getCount(); i++) {
-            var cmpFilterValues = components.get(i).getFilterValues();
+        for (var i = 0; i < components.length; i++) {
+            var cmpFilterValues = components[i].getFilterValues();
             Ext.apply(filterParams, cmpFilterValues);
         }
 
@@ -256,7 +265,7 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
      * }]
      */
     getSelectedCSWServices : function() {
-        var parentFieldSet = this.findByType('fieldset')[0];
+        var parentFieldSet = this._getRepositoryFieldSet();
         var checkBoxGroup = parentFieldSet.findByType('checkboxgroup')[0];
 
         var items = checkBoxGroup.getValue();

@@ -34,7 +34,7 @@ CSWThemeFilter.Keywords = Ext.extend(CSWThemeFilter.BaseComponent, {
         //Generate our configuration (
         var keywordsComponent = this;
         Ext.apply(cfg, {
-            title : 'Keywords',
+            title : 'Match Keywords',
             collapsible : true,
             border : false,
             items : [{
@@ -43,6 +43,7 @@ CSWThemeFilter.Keywords = Ext.extend(CSWThemeFilter.BaseComponent, {
                 border : false,
                 items : [{
                     xtype : 'combo',
+                    anchor : '-60',
                     store : keywordMatchStore,
                     forceSelection : true,
                     triggerAction : 'all',

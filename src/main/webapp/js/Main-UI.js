@@ -1183,13 +1183,9 @@ Ext.onReady(function() {
     // a form for filtering records from a CSW and then displaying the results
     var cswFilterPanel = new CSWThemeFilterForm({
         id : 'csw-filter-panel',
-        title : 'Theme Filter',
+        title : 'Search Layers',
         height: 425,
         autoScroll: true,
-        getMapFn : function() {
-            return map;
-        },
-
         bbar: [{
             xtype: 'tbfill'
             },{

@@ -9,7 +9,7 @@ CSWThemeFilter.Text = Ext.extend(CSWThemeFilter.BaseComponent, {
 
         //Build our configuration
         Ext.apply(cfg, {
-            title : 'Text',
+            title : 'Match Text',
             collapsible : true,
             border : false,
             items : [{

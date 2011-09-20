@@ -17,6 +17,7 @@ public class CSWServiceItem {
     private String serviceUrl;
     private String[] restrictedRoleList;
     private String recordInformationUrl;
+    private boolean selectedByDefault;
 
     /**
      * Creates a new service item with NO role restrictions
@@ -49,6 +50,7 @@ public class CSWServiceItem {
         this.serviceUrl = serviceUrl;
         this.recordInformationUrl = recordInformationUrl;
         this.title = title;
+        this.selectedByDefault = false;
     }
 
     /**
@@ -161,6 +163,23 @@ public class CSWServiceItem {
         }
 
         return this.equals(item.id);
+    }
+
+
+    /**
+     * Whether this CSW service is initially selected for searching by the GUI
+     * @return
+     */
+    public boolean isSelectedByDefault() {
+        return selectedByDefault;
+    }
+
+    /**
+     * Sets whether this CSW service is initially selected for searching by the GUI
+     * @param selectedByDefault
+     */
+    public void setSelectedByDefault(boolean selectedByDefault) {
+        this.selectedByDefault = selectedByDefault;
     }
 
     /**

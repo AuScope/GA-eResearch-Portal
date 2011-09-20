@@ -74,6 +74,7 @@ public class CSWFilterController extends BaseCSWController {
             map.put("title", item.getTitle());
             map.put("id", item.getId());
             map.put("url", item.getServiceUrl());
+            map.put("selectedByDefault", item.isSelectedByDefault());
 
             convertedServiceItems.add(map);
         }

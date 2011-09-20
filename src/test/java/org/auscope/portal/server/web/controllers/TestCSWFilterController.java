@@ -396,6 +396,9 @@ public class TestCSWFilterController {
                 new CSWServiceItem("id2", "serviceUrl2", "infoUrl2", "title2")
         };
 
+        expected[0].setSelectedByDefault(true);
+        expected[1].setSelectedByDefault(false);
+
         context.checking(new Expectations() {{
             oneOf(mockService).getCSWServiceItems();will(returnValue(expected));
         }});
@@ -411,9 +414,11 @@ public class TestCSWFilterController {
         Assert.assertEquals("id1", actual.get(0).get("id"));
         Assert.assertEquals("serviceUrl1", actual.get(0).get("url"));
         Assert.assertEquals("title1", actual.get(0).get("title"));
+        Assert.assertEquals(true, actual.get(0).get("selectedByDefault"));
 
         Assert.assertEquals("id2", actual.get(1).get("id"));
         Assert.assertEquals("serviceUrl2", actual.get(1).get("url"));
         Assert.assertEquals("title2", actual.get(1).get("title"));
+        Assert.assertEquals(false, actual.get(1).get("selectedByDefault"));
     }
 }
