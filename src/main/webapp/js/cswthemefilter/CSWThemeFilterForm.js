@@ -266,7 +266,14 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
      */
     getSelectedCSWServices : function() {
         var parentFieldSet = this._getRepositoryFieldSet();
+
+        // Our checkbox may NOT have been rendered (if the parent hasn't been expanded yet)
+        // Ensure we are rendered before proceeding
         var checkBoxGroup = parentFieldSet.findByType('checkboxgroup')[0];
+        if (!checkBoxGroup.rendered) {
+            parentFieldSet.expand();
+            parentFieldSet.collapse();
+        }
 
         var items = checkBoxGroup.getValue();
         var result = [];
