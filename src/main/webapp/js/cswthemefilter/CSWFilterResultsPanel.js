@@ -26,11 +26,11 @@ CSWFilterResultsPanel = Ext.extend(Ext.grid.GridPanel, {
         this.filterParams = cfg.filterParams;
         this.cswRecordStore = new CSWRecordStore('getFilteredCSWRecords.do', cfg.filterParams);
 
+        //we will load the record store AFTER it is rendered (to ensure the load mask shows)
         var initialLoadParams = Ext.apply(this.filterParams, {
             limit : 10,
             start : 0
         })
-        this.cswRecordStore.load(initialLoadParams);
 
         //Build our configuration object
         Ext.apply(cfg, {
@@ -103,6 +103,9 @@ CSWFilterResultsPanel = Ext.extend(Ext.grid.GridPanel, {
                 emptyMsg: 'No records pass the specified filter(s)'
             }),
             listeners : {
+                afterrender : function(grid) {
+                    grid.cswRecordStore.load(initialLoadParams);
+                },
                 celldblclick : function (grid, rowIndex, colIndex, e) {
                     var record = grid.getStore().getAt(rowIndex);
                     var fieldName = grid.getColumnModel().getDataIndex(colIndex);

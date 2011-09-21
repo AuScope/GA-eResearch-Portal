@@ -39,7 +39,8 @@ MultiCSWFilterResultsPanel = Ext.extend(Ext.TabPanel, {
         Ext.apply(cfg, {
             autoScroll : true,
             activeTab : 0,
-			enableTabScroll : true,
+            enableTabScroll : true,
+            deferredRender : false,  //We want all of our results to render immediately (that way they can make requests immediately)
             items : resultBrowsers
         });
 
