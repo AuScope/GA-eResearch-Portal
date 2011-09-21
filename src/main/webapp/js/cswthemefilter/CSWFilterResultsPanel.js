@@ -6,7 +6,6 @@
  */
 CSWFilterResultsPanel = Ext.extend(Ext.grid.GridPanel, {
 
-
     cswRecordStore : null,
     filterParams : null,
     map : null,
@@ -274,6 +273,79 @@ CSWFilterResultsPanel = Ext.extend(Ext.grid.GridPanel, {
 
         return selectedRecords;
     },
+
+    /**
+     * Gets the Integer count of the number of records
+     * that pass the specified filter
+     *
+     * This function makes NO external requests
+     */
+    getMatchingCSWRecordsCount : function() {
+        return this.cswRecordStore.totalLength;
+    },
+
+    /**
+     * Gets EVERY CSW Record that matches the filter (up to limit records or 100 if not specified)
+     *
+     * The records will be returned as array which will be passed to callback (possibly immediately)
+     *
+     * This function will make requests to the server IF the
+     * result has been broken up into pages (ie it doesn't have the
+     * full set of records).
+     *
+     * limit - Number - a hard limit on the maximum number of records to request (if not specified 100 will be used)
+     * callback - Function(Boolean, Array) - a callback function to be passed an array of CSWRecord objects
+     */
+    getMatchingCSWRecords : function(limit, callback) {
+        //This case is easy, return all records
+        //otherwise we need to make a special request to the server
+        if (this.cswRecordStore.getCount() === this.getMatchingCSWRecordsCount()) {
+            var matchingRecords = [];
+            for (var i = 0; i < this.cswRecordStore.getCount(); i++) {
+                matchingRecords.push(this.cswRecordStore.getCSWRecordAt(i));
+            }
+            callback(true, matchingRecords);
+            return;
+        }
+
+        //Ensure we have a default limit
+        if (!Ext.isNumber(limit)) {
+            limit = 100;
+        }
+
+        //Get our request params (and set our new range in place)
+        var requestParams = Ext.apply({}, this.initialConfig.filterParams); //clone
+        requestParams.limit = limit;
+        requestParams.start = 0;
+
+        //Make our request and parse through a dummy CSWRecordStore (for ease of use)
+        Ext.Ajax.request({
+            url : 'getFilteredCSWRecords.do',
+            timeout : 1000 * 60 * 5, //5 minutes
+            params : requestParams,
+            callback : function(options, success, response) {
+                if (!success) {
+                    callback(false, []);
+                    return;
+                }
+
+                var responseObj = Ext.util.JSON.decode(response.responseText);
+                if (!responseObj.success) {
+                    callback(false, []);
+                    return;
+                }
+
+                var temporaryStore = new CSWRecordStore('', {});
+                temporaryStore.loadData(responseObj);
+
+                var matchingRecords = [];
+                for (var i = 0; i < temporaryStore.getCount(); i++) {
+                    matchingRecords.push(temporaryStore.getCSWRecordAt(i));
+                }
+                callback(true, matchingRecords);
+            }
+        })
+    }
 });
 
 Ext.reg('cswresultspanel', CSWFilterResultsPanel);

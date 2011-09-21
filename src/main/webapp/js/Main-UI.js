@@ -1225,6 +1225,54 @@ Ext.onReady(function() {
                     buttonAlign : 'right',
                     buttons : [{
                         xtype : 'button',
+                        text : 'Add All Records',
+                        iconCls : 'addall',
+                        handler : function(button, e) {
+                            var multiFilterPanel = button.findParentByType('window').findByType('multicswresultspanel')[0];
+                            var matchingRecordsCount = multiFilterPanel.getMatchingCSWRecordsCount();
+                            var addAllFn = function(buttonId, text, opts) {
+                                if (buttonId !== 'yes' && butonId !== 'ok') {
+                                    return;
+                                }
+                                var loadMask = new Ext.LoadMask(Ext.getBody(), {
+                                    msg : 'Please wait, requesting records...'
+                                });
+                                loadMask.show();
+                                multiFilterPanel.getMatchingCSWRecords(opts.limit, function(success, newRecords){
+                                    loadMask.hide();
+                                    if (success) {
+                                        for (var i = 0; i < newRecords.length; i++) {
+                                            cswPanelAddHandler(newRecords[i]);
+                                        }
+                                    }
+                                });
+                            };
+
+                            //if we are still loading do nothing
+                            if (matchingRecordsCount === null || matchingRecordsCount === undefined) {
+                                return;
+                            }
+
+                            //If the user is going to add a LOT of records, ask them if they really want to proceed.
+                            //If they do limit them to stop them adding 3k records
+                            var softLimit = 10;
+                            var hardLimit = 100;
+                            if (matchingRecordsCount > softLimit) {
+                                Ext.MessageBox.show({
+                                    buttons : Ext.MessageBox.YESNO,
+                                    fn : addAllFn,
+                                    modal : true,
+                                    msg : String.format('You are trying to add {0} records. Adding more than {1} records at a time can cause serious performance problems. Are you sure you want to continue?',matchingRecordsCount,softLimit),
+                                    title : 'Too many records',
+                                    icon : Ext.MessageBox.QUESTION,
+                                    limit : hardLimit
+                                });
+                            } else {
+                                addAllFn('yes', '', {limit : matchingRecordsCount});
+                            }
+                        }
+                    },{
+                        xtype : 'button',
                         text : 'Add Selected Records',
                         iconCls : 'add',
                         handler : function(button, e) {

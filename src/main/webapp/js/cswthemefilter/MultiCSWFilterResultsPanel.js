@@ -49,6 +49,44 @@ MultiCSWFilterResultsPanel = Ext.extend(Ext.TabPanel, {
     },
 
     /**
+     * Gets the Integer count of the currently selected result set (ie the number of records
+     * that are available for the selected registry that pass the specified filter)
+     *
+     * This function makes NO external requests
+     */
+    getMatchingCSWRecordsCount : function() {
+        var activeTab = this.getActiveTab();
+        if (activeTab == null) {
+            return 0;
+        }
+
+        return activeTab.getMatchingCSWRecordsCount();
+    },
+
+    /**
+     * [For the currently selected result set]
+     *
+     * Gets EVERY CSW Record that matches the filter (up to limit records or 100 if not specified)
+     *
+     * The records will be returned as array which will be passed to callback (possibly immediately)
+     *
+     * This function will make requests to the server IF the
+     * result has been broken up into pages (ie it doesn't have the
+     * full set of records).
+     *
+     * limit - Number - a hard limit on the maximum number of records to request (if not specified 100 will be used)
+     * callback - Function(Boolean, Array) - a callback function to be passed an array of CSWRecord objects
+     */
+    getMatchingCSWRecords : function(limit, callback) {
+        var activeTab = this.getActiveTab();
+        if (activeTab == null) {
+            return 0;
+        }
+
+        activeTab.getMatchingCSWRecords(limit, callback);
+    },
+
+    /**
      * Returns a (possibly empty) Array of CSWRecord objects representing the
      * selected records
      */
