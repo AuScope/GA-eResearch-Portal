@@ -2,8 +2,12 @@
 // --- http://www.sencha.com/forum/showthread.php?9619-Yet-another-ComboBox-with-clear-button
 Ext.ns('Ext.ux.form');
 Ext.ux.form.ClearableComboBox = Ext.extend(Ext.form.ComboBox, {
+    constructor : function(cfg){
+        Ext.ux.form.ClearableComboBox.superclass.constructor.call(this, cfg);
+    },
+
     initComponent : function(){
-		Ext.ux.form.ClearableComboBox.superclass.initComponent.call(this);
+        Ext.ux.form.ClearableComboBox.superclass.initComponent.call(this);
 
         this.triggerConfig = {
             tag:'span', cls:'x-form-twin-triggers', style:'padding-right:2px',  // padding needed to prevent IE from clipping 2nd trigger button
@@ -47,7 +51,9 @@ Ext.ux.form.ClearableComboBox = Ext.extend(Ext.form.ComboBox, {
 
     onTrigger1Click : function() {this.onTriggerClick();},   // pass to original combobox trigger handler
     onTrigger2Click : function() {
-    	this.reset();
-    	this.fireEvent('select', this, null, -1);
+        this.reset();
+        this.fireEvent('select', this, null, -1);
     }             // clear contents of combobox
 });
+
+Ext.reg('portalclearablecombo', Ext.ux.form.ClearableComboBox);
