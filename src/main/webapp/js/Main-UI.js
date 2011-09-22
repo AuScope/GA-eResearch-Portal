@@ -8,7 +8,6 @@ var mapInfoWindowManager = null;
 var map;
 
 //Send these headers with every AJax request we make...
-//VT:chrome doesn't like this header: Refused to set unsafe header "Accept-Encoding"
 Ext.Ajax.defaultHeaders = {
     'Accept-Encoding': 'gzip, deflate' //This ensures we use gzip for most of our requests (where available)
 };
@@ -18,11 +17,12 @@ Ext.onReady(function() {
     // Ext quicktips - check out <span qtip="blah blah"></span> around pretty much anything.
     Ext.QuickTips.init();
 
+    var formFactory = new FormFactory();
     var searchBarThreshold = 6; //how many records do we need to have before we show a search bar
 
     //Generate our data stores
-    var activeLayersStore = new ActiveLayersStore();
     var customLayersStore = new CSWRecordStore('getCustomLayers.do');
+    var activeLayersStore = new ActiveLayersStore();
 
     //Called whenever any of the CSWPanels click 'Add to Map'
     //defaultVisibility [boolean] - Optional - Set this to override the visibility setting for the new layer
@@ -115,19 +115,7 @@ Ext.onReady(function() {
         }
     };
 
-    //Pans the map so that all bboxes linked to this record are visible.
-    //If currentBounds is specified
-    var moveToBoundsCSWRecord = function(cswRecord) {
-        var bboxExtent = cswRecord.generateGeographicExtent();
-
-        if (!bboxExtent) {
-            return;
-        }
-
-        moveMapToBounds(bboxExtent);
-    };
-
-  //Given a CSWRecord, show (on the map) the list of bboxes associated with that record temporarily
+    //Given a CSWRecord, show (on the map) the list of bboxes associated with that record temporarily
     //bboxOverlayManager - if specified, will be used to store the overlays, otherwise the cswRecord's
     //                      bboxOverlayManager will be used
     var showBoundsCSWRecord = function(cswRecord, bboxOverlayManager) {
@@ -164,6 +152,160 @@ Ext.onReady(function() {
         clearTask.delay(2000);
     };
 
+    //Pans/Zooms the map so the specified BBox object is visible
+    var moveMapToBounds = function(bbox) {
+        var sw = new GLatLng(bbox.southBoundLatitude, bbox.westBoundLongitude);
+        var ne = new GLatLng(bbox.northBoundLatitude, bbox.eastBoundLongitude);
+        var layerBounds = new GLatLngBounds(sw,ne);
+
+        //Adjust zoom if required
+        var visibleBounds = map.getBounds();
+        map.setZoom(map.getBoundsZoomLevel(layerBounds));
+
+        //Pan to position
+        var layerCenter = layerBounds.getCenter();
+        map.panTo(layerCenter);
+    };
+
+    //Pans the map so that all bboxes linked to this record are visible.
+    //If currentBounds is specified
+    var moveToBoundsCSWRecord = function(cswRecord) {
+        var bboxExtent = cswRecord.generateGeographicExtent();
+
+        if (!bboxExtent) {
+            return;
+        }
+
+        moveMapToBounds(bboxExtent);
+    };
+
+    // a form for filtering records from a CSW and then displaying the results
+    var cswFilterPanel = new CSWThemeFilterForm({
+        id : 'csw-filter-panel',
+        title : 'Search Layers',
+        height: 425,
+        autoScroll: true,
+        bbar: [{
+            xtype: 'tbfill'
+            },{
+            xtype : 'button',
+            text : 'Search',
+
+            //pressed : true,
+            iconCls : 'find',
+            handler : function() {
+                var filterPanel = Ext.getCmp('csw-filter-panel');
+                var filterParams = filterPanel.generateCSWFilterParameters();
+
+                //Ensure we have selected at least 1 registry
+                var selectedCSWs = filterPanel.getSelectedCSWServices();
+                if (selectedCSWs.length == 0) {
+                    Ext.MessageBox.show({
+                        title : 'No Registries',
+                        icon : Ext.MessageBox.WARNING,
+                        buttons : Ext.Msg.OK,
+                        msg : 'You must select at least one registry before you can perform a CSW query.',
+                        multiline : false
+                    });
+                    return;
+                }
+
+                win = new Ext.Window({
+                    title       : 'Search Results',
+                    layout      : 'fit',
+                    width       : 500,
+                    height      : 420,
+                    items: [{
+                        xtype : 'multicswresultspanel',
+                        filterParams : filterParams,
+                        cswServiceItems : selectedCSWs,
+                        map : map
+                    }],
+                    buttonAlign : 'right',
+                    buttons : [{
+                        xtype : 'button',
+                        text : 'Add All Records',
+                        iconCls : 'addall',
+                        handler : function(button, e) {
+                            var multiFilterPanel = button.findParentByType('window').findByType('multicswresultspanel')[0];
+                            var matchingRecordsCount = multiFilterPanel.getMatchingCSWRecordsCount();
+                            var addAllFn = function(buttonId, text, opts) {
+                                if (buttonId !== 'yes' && butonId !== 'ok') {
+                                    return;
+                                }
+                                var loadMask = new Ext.LoadMask(Ext.getBody(), {
+                                    msg : 'Please wait, requesting records...'
+                                });
+                                loadMask.show();
+                                multiFilterPanel.getMatchingCSWRecords(opts.limit, function(success, newRecords){
+                                    loadMask.hide();
+                                    if (success) {
+                                        for (var i = 0; i < newRecords.length; i++) {
+                                            cswPanelAddHandler(newRecords[i]);
+                                        }
+                                    }
+                                });
+                            };
+
+                            //if we are still loading do nothing
+                            if (matchingRecordsCount === null || matchingRecordsCount === undefined) {
+                                return;
+                            }
+
+                            //If the user is going to add a LOT of records, ask them if they really want to proceed.
+                            //If they do limit them to stop them adding 3k records
+                            var softLimit = 10;
+                            var hardLimit = 100;
+                            if (matchingRecordsCount > softLimit) {
+                                Ext.MessageBox.show({
+                                    buttons : Ext.MessageBox.YESNO,
+                                    fn : addAllFn,
+                                    modal : true,
+                                    msg : String.format('You are trying to add {0} records. Adding more than {1} records at a time can cause serious performance problems. Are you sure you want to continue?',matchingRecordsCount,softLimit),
+                                    title : 'Too many records',
+                                    icon : Ext.MessageBox.QUESTION,
+                                    limit : hardLimit
+                                });
+                            } else {
+                                addAllFn('yes', '', {limit : matchingRecordsCount});
+                            }
+                        }
+                    },{
+                        xtype : 'button',
+                        text : 'Add Selected Records',
+                        iconCls : 'add',
+                        handler : function(button, e) {
+                            //Get our reference to our MultiCSWResultsPanel
+                            var multiFilterPanel = button.findParentByType('window').findByType('multicswresultspanel')[0];
+
+                            //Get our selected records
+                            var selection = multiFilterPanel.getSelectedCSWRecords();
+                            if (selection.length === 0) {
+                                return;
+                            }
+
+                            for (var i = 0; i < selection.length; i++) {
+                                cswPanelAddHandler(selection[i]);
+                            }
+                        }
+                    }]
+
+                });
+
+                win.show(this);
+            }
+        }]
+    });
+
+    //------ Custom Layers
+    var customLayersPanel = new CustomLayersGridPanel('custom-layers-panel',
+                                                    'Custom Layers',
+                                                    'Add your own WMS Layers',
+                                                    customLayersStore,
+                                                    cswPanelAddHandler,
+                                                    showBoundsCSWRecord,
+                                                    moveToBoundsCSWRecord);
+
     //Returns an object
     //{
     //    bboxSrs : 'EPSG:4326'
@@ -193,6 +335,38 @@ Ext.onReady(function() {
                 upperCornerPoints : [Math.max(adjustedSWLng, adjustedNELng), Math.max(sw.lat(), ne.lat())]
         };
     };
+
+    var filterButton = new Ext.Button({
+        text     :'Apply Filter >>',
+        tooltip  :'Apply Filter',
+        disabled : true,
+        handler  : function() {
+            var activeLayerRecord = new ActiveLayersRecord(activeLayersPanel.getSelectionModel().getSelected());
+            loadLayer(activeLayerRecord);
+        }
+    });
+
+    /**
+     * Used to show extra details for querying services
+     */
+    var filterPanel = new Ext.Panel({
+        title: '<span qtip="Layer Specific filter properties. <br>Dont forget to hit \'Apply Filter\'">Filter Properties</span>',
+        region: 'south',
+        split: true,
+        layout: 'card',
+        activeItem: 0,
+        height: 200,
+        autoScroll  : true,
+        layoutConfig: {
+            layoutOnCardChange: true// Important when not specifying an items array
+        },
+        items: [
+            {
+                html: '<p id="filterpanelbox"> Filter options will be shown here for special services.</p>'
+            }
+        ],
+        bbar: ['->', filterButton]
+    });
 
     /**
      *Iterates through the activeLayersStore and updates each WMS layer's Z-Order to is position within the store
@@ -259,13 +433,46 @@ Ext.onReady(function() {
         activeLayerRecord.setLayerVisible(isChecked);
 
         if (isChecked) {
-            loadLayer(activeLayerRecord);
+            var filterPanelObj = activeLayerRecord.getFilterPanel();
+
+            //Create our filter panel if we haven't already
+            if (!filterPanelObj) {
+                filterPanelObj = formFactory.getFilterForm(activeLayerRecord, map);
+                activeLayerRecord.setFilterPanel(filterPanelObj);
+            }
+
+            //If the filter panel already exists, this may be a case where we are retriggering visiblity
+            //in which case just rerun the previous filter
+            if (filterPanelObj.form && forceApplyFilter && !filterButton.disabled) {
+                filterButton.handler();
+            }
+
+            //If there is a filter panel, show it
+            if (filterPanelObj.form) {
+                filterPanel.add(filterPanelObj.form);
+                filterPanel.getLayout().setActiveItem(activeLayerRecord.getId());
+            }
+
+            if (!deferLayerLoad) {
+                //if we enable the filter button we don't download the layer immediately (as the user will have to enter in filter params)
+                if (filterPanelObj.supportsFiltering) {
+                    filterButton.enable();
+                    filterButton.toggle(true);
+                } else {
+                    //Otherwise the layer doesn't need filtering, just display it immediately
+                    loadLayer(activeLayerRecord);
+                }
+            }
+            filterPanel.doLayout();
         } else {
             //Otherwise we are making the layer invisible, so clear any overlays
             var overlayManager = activeLayerRecord.getOverlayManager();
             if (overlayManager) {
                 overlayManager.clearOverlays();
             }
+
+            filterPanel.getLayout().setActiveItem(0);
+            filterButton.disable();
         }
     };
 
@@ -283,64 +490,78 @@ Ext.onReady(function() {
         var responseTooltip = new ResponseTooltip();
         activeLayerRecord.setResponseToolTip(responseTooltip);
 
+        var titleFilter = '';
+        var keywordFilter = '';
+        var resourceProviderFilter = '';
+        var filterObj = null;
 
+        if (overrideFilterParams) {
+            filterObj = overrideFilterParams;
+        } else {
+            if(typeof filterPanel.getLayout().activeItem.getForm == 'function') {
+                filterObj = filterPanel.getLayout().activeItem.getForm().getValues();
+            }
+        }
+
+        var regexp = /\*/;
+        if(filterObj !== null){
+            titleFilter = filterObj.title;
+            if(titleFilter !== '' && /^\w+/.test(titleFilter)) {
+                regexp = new RegExp(titleFilter, "i");
+            }
+        }
+
+        if(filterObj !== null && filterObj.keyword !== null) {
+            keywordFilter = filterObj.keyword;
+        }
+
+        if(filterObj !== null && filterObj.resourceProvider !== null) {
+            resourceProviderFilter = filterObj.resourceProvider;
+        }
+
+        activeLayerRecord.setLastFilterParameters(filterObj);
 
         //Get the list of bounding box polygons
         var cswRecords = activeLayerRecord.getCSWRecords();
-        var knownLayer = activeLayerRecord.getParentKnownLayer();
         var numRecords = 0;
         for (var i = 0; i < cswRecords.length; i++) {
-            numRecords++;
-            var geoEls = cswRecords[i].getGeographicElements();
+            if ((titleFilter === '' || regexp.test(cswRecords[i].getServiceName())) &&
+                    (keywordFilter === '' || cswRecords[i].containsKeyword(keywordFilter)) &&
+                    (resourceProviderFilter === '' || cswRecords[i].getResourceProvider() == resourceProviderFilter)) {
+                numRecords++;
+                var geoEls = cswRecords[i].getGeographicElements();
 
-            //If we dont have any way of rendering this on the map, just show popup window with details instead
-            if (geoEls.length === 0) {
-                var popup = new CSWRecordMetadataWindow({
-                    cswRecord : cswRecords[i]
-                });
-                popup.show();
-            }
+                for (var j = 0; j < geoEls.length; j++) {
+                    var geoEl = geoEls[j];
+                    if (geoEl instanceof BBox) {
+                        if(geoEl.eastBoundLongitude == geoEl.westBoundLongitude &&
+                            geoEl.southBoundLatitude == geoEl.northBoundLatitude) {
+                            //We only have a point
+                            var point = new GLatLng(parseFloat(geoEl.southBoundLatitude),
+                                    parseFloat(geoEl.eastBoundLongitude));
 
-            for (var j = 0; j < geoEls.length; j++) {
-                var geoEl = geoEls[j];
-                if (geoEl instanceof BBox) {
-                    if(geoEl.eastBoundLongitude == geoEl.westBoundLongitude &&
-                        geoEl.southBoundLatitude == geoEl.northBoundLatitude) {
-                        //We only have a point
-                        var point = new GLatLng(parseFloat(geoEl.southBoundLatitude),
-                                parseFloat(geoEl.eastBoundLongitude));
+                            var icon = new GIcon(G_DEFAULT_ICON, activeLayerRecord.getIconUrl());
+                            icon.shadow = null;
+                            //icon.iconSize =
+                            //icon.iconAnchor =
 
-                        var icon = new GIcon(G_DEFAULT_ICON, activeLayerRecord.getIconUrl());
-                        icon.shadow = null;
+                            var marker = new GMarker(point, {icon: icon});
+                            marker.activeLayerRecord = activeLayerRecord.internalRecord;
+                            marker.cswRecord = cswRecords[i].internalRecord;
+                            //marker.onlineResource = onlineResource;
 
-                        if (knownLayer !== null) {
-                            var iconSize = knownLayer.getIconSize();
-                            if (iconSize) {
-                                icon.iconSize = new GSize(iconSize.width, iconSize.height);
+                            //Add our single point
+                            overlayManager.markerManager.addMarker(marker, 0);
+
+                        } else { //polygon
+                            var polygonList = geoEl.toGMapPolygon('#0003F9', 4, 0.75,'#0055FE', 0.4);
+
+                            for (var k = 0; k < polygonList.length; k++) {
+                                polygonList[k].cswRecord = cswRecords[i].internalRecord;
+                                polygonList[k].activeLayerRecord = activeLayerRecord.internalRecord;
+
+                                overlayManager.addOverlay(polygonList[k]);
                             }
-
-                            var iconAnchor = knownLayer.getIconAnchor();
-                            if(iconAnchor) {
-                                icon.iconAnchor = new GPoint(iconAnchor.x, iconAnchor.y);
-                            }
-                        }
-
-                        var marker = new GMarker(point, {icon: icon});
-                        marker.activeLayerRecord = activeLayerRecord.internalRecord;
-                        marker.cswRecord = cswRecords[i].internalRecord;
-                        //marker.onlineResource = onlineResource;
-
-                        //Add our single point
-                        overlayManager.markerManager.addMarker(marker, 0);
-
-                    } else { //polygon
-                        var polygonList = geoEl.toGMapPolygon('#0003F9', 4, 0.75,'#0055FE', 0.4);
-
-                        for (var k = 0; k < polygonList.length; k++) {
-                            polygonList[k].cswRecord = cswRecords[i].internalRecord;
-                            polygonList[k].activeLayerRecord = activeLayerRecord.internalRecord;
-
-                            overlayManager.addOverlay(polygonList[k]);
                         }
                     }
                 }
@@ -460,7 +681,6 @@ Ext.onReady(function() {
         var cswRecords = activeLayerRecord.getCSWRecordsWithType('WFS');
         var iconUrl = activeLayerRecord.getIconUrl();
         var finishedLoadingCounter = cswRecords.length;
-        var parentKnownLayer = activeLayerRecord.getParentKnownLayer();
 
         //Begin loading from each service
         activeLayerRecord.setIsLoading(true);
@@ -485,6 +705,10 @@ Ext.onReady(function() {
                 if (overrideFilterParams) {
                     filterParameters = overrideFilterParams;
                 } else {
+                    if (filterPanel.getLayout().activeItem != filterPanel.getComponent(0)) {
+                        filterParameters = filterPanel.getLayout().activeItem.getForm().getValues();
+                    }
+
                     // limit our feature request to 200 so we don't overwhelm the browser
                     if (Ext.isNumber(MAX_FEATURES)) {
                         filterParameters.maxFeatures = MAX_FEATURES;
@@ -492,9 +716,6 @@ Ext.onReady(function() {
                         filterParameters.maxFeatures = 200;
                     }
                     filterParameters.bbox = Ext.util.JSON.encode(fetchVisibleMapBounds(map)); // This line activates bbox support AUS-1597
-                    if (parentKnownLayer && parentKnownLayer.getDisableBboxFiltering()) {
-                        filterParameters.bbox = null; //some WFS layer groupings may wish to disable bounding boxes
-                    }
                 }
                 activeLayerRecord.setLastFilterParameters(filterParameters);
 
@@ -551,7 +772,6 @@ Ext.onReady(function() {
 
         var debuggerData = activeLayerRecord.getDebuggerData();
 
-        var knownLayer = activeLayerRecord.getParentKnownLayer();
 
         //If we don't have a proxy URL specified, use the generic 'getAllFeatures.do'
         var url = activeLayerRecord.getProxyUrl();
@@ -572,24 +792,9 @@ Ext.onReady(function() {
 
                 if (jsonResponse.success) {
                     var icon = new GIcon(G_DEFAULT_ICON, activeLayerRecord.getIconUrl());
-
-                    //Assumption - we are only interested in the first (if any) KnownLayer
-                    if (knownLayer) {
-                        var iconSize = knownLayer.getIconSize();
-                        if (iconSize) {
-                            icon.iconSize = new GSize(iconSize.width, iconSize.height);
-                        }
-
-                        var iconAnchor = knownLayer.getIconAnchor();
-                        if(iconAnchor) {
-                            icon.iconAnchor = new GPoint(iconAnchor.x, iconAnchor.y);
-                        }
-
-                        var infoWindowAnchor = knownLayer.getInfoWindowAnchor();
-                        if(infoWindowAnchor) {
-                            icon.infoWindowAnchor = new GPoint(infoWindowAnchor.x, infoWindowAnchor.y);
-                        }
-                    }
+                    //icon.iconSize
+                    //icon.iconAnchor
+                    //icon.infoWindowAnchor
 
                     //TODO: This is a hack to remove marker shadows. Eventually it should be
                     // put into an external config file or become a session-based preference.
@@ -675,7 +880,31 @@ Ext.onReady(function() {
 
     //This handler is called whenever the user selects an active layer
     var activeLayerSelectionHandler = function(activeLayerRecord) {
+        //if its not checked then don't do any actions
+        if (!activeLayerRecord.getLayerVisible()) {
+            filterPanel.getLayout().setActiveItem(0);
+            filterButton.disable();
+        } else if (activeLayerRecord.getFilterPanel() !== null) {
+            var filterPanelObj = activeLayerRecord.getFilterPanel();
 
+            //if filter panel already exists then show it
+            if (filterPanelObj && filterPanelObj.form) {
+                filterPanel.getLayout().setActiveItem(activeLayerRecord.getId());
+            } else {
+                filterPanel.getLayout().setActiveItem(0);
+            }
+
+            if (filterPanelObj && filterPanelObj.supportsFiltering) {
+                filterButton.enable();
+                filterButton.toggle(true);
+            } else {
+                filterButton.disable();
+            }
+        } else {
+            //if this type doesnt need a filter panel then just show the default filter panel
+            filterPanel.getLayout().setActiveItem(0);
+            filterButton.disable();
+        }
     };
 
 
@@ -708,6 +937,16 @@ Ext.onReady(function() {
 
             //remove it from active layers
             activeLayersStore.removeActiveLayersRecord(activeLayerRecord);
+
+            //set the filter panels active item to 0
+            filterPanel.getLayout().setActiveItem(0);
+
+            //Completely destroy the filter panel object as we no longer
+            //have any use for it
+            var filterPanelObj = activeLayerRecord.getFilterPanel();
+            if (filterPanelObj && filterPanelObj.form) {
+                filterPanelObj.form.destroy();
+            }
         }
     };
 
@@ -937,12 +1176,7 @@ Ext.onReady(function() {
                     this.onlineResourcesPopup.close();
                 }
                 var cswRecords = activeLayerRecord.getCSWRecords();
-                if (activeLayerRecord.getSource() === 'KnownLayer'){
-                    var knownLayerRecord = knownLayersStore.getKnownLayerById(activeLayerRecord.getId());
-                    this.onlineResourcesPopup = new CSWRecordDescriptionWindow(cswRecords, knownLayerRecord);
-                }else{
-                    this.onlineResourcesPopup = new CSWRecordDescriptionWindow(cswRecords);
-                }
+                this.onlineResourcesPopup = new CSWRecordDescriptionWindow(cswRecords);
                 this.onlineResourcesPopup.show(e.getTarget());
 
             }
@@ -965,20 +1199,20 @@ Ext.onReady(function() {
                 var filter_debugger_param = gup( 'debug' );
                 //get the debug window if there is a debug variable with value 1
                 if(filter_debugger_param == 1 || filter_debugger_param == "on"){
-                       var debugHtml = 'Please generate a request to get the request query.';
+                    var debugHtml = 'Please generate a request to get the request query.';
 
                     if (activeLayerRecord.getDebuggerData()) {
-                           debugHtml = activeLayerRecord.getDebuggerData().getHtml();
+                        debugHtml = activeLayerRecord.getDebuggerData().getHtml();
                     }
 
                     var chkpanel = new Ext.Panel({
-                           autoScroll   : true,
+                        autoScroll  : true,
                         html    :   debugHtml
                     });
                     var debugWin = new Ext.Window({
                         title: 'WFS Debug Information',
-                           layout:'fit',
-                           width:500,
+                        layout:'fit',
+                        width:500,
                         height:300,
 
                         items: [chkpanel]
@@ -1180,133 +1414,7 @@ Ext.onReady(function() {
         form.dom.submit();
     };
 
-    // a form for filtering records from a CSW and then displaying the results
-    var cswFilterPanel = new CSWThemeFilterForm({
-        id : 'csw-filter-panel',
-        title : 'Search Layers',
-        height: 425,
-        autoScroll: true,
-        bbar: [{
-            xtype: 'tbfill'
-            },{
-            xtype : 'button',
-            text : 'Search',
-
-            //pressed : true,
-            iconCls : 'find',
-            handler : function() {
-                var filterPanel = Ext.getCmp('csw-filter-panel');
-                var filterParams = filterPanel.generateCSWFilterParameters();
-
-                //Ensure we have selected at least 1 registry
-                var selectedCSWs = filterPanel.getSelectedCSWServices();
-                if (selectedCSWs.length == 0) {
-                    Ext.MessageBox.show({
-                        title : 'No Registries',
-                        icon : Ext.MessageBox.WARNING,
-                        buttons : Ext.Msg.OK,
-                        msg : 'You must select at least one registry before you can perform a CSW query.',
-                        multiline : false
-                    });
-                    return;
-                }
-
-                win = new Ext.Window({
-                    title       : 'Search Results',
-                    layout      : 'fit',
-                    width       : 500,
-                    height      : 420,
-                    items: [{
-                        xtype : 'multicswresultspanel',
-                        filterParams : filterParams,
-                        cswServiceItems : selectedCSWs,
-                        map : map
-                    }],
-                    buttonAlign : 'right',
-                    buttons : [{
-                        xtype : 'button',
-                        text : 'Add All Records',
-                        iconCls : 'addall',
-                        handler : function(button, e) {
-                            var multiFilterPanel = button.findParentByType('window').findByType('multicswresultspanel')[0];
-                            var matchingRecordsCount = multiFilterPanel.getMatchingCSWRecordsCount();
-                            var addAllFn = function(buttonId, text, opts) {
-                                if (buttonId !== 'yes' && butonId !== 'ok') {
-                                    return;
-                                }
-                                var loadMask = new Ext.LoadMask(Ext.getBody(), {
-                                    msg : 'Please wait, requesting records...'
-                                });
-                                loadMask.show();
-                                multiFilterPanel.getMatchingCSWRecords(opts.limit, function(success, newRecords){
-                                    loadMask.hide();
-                                    if (success) {
-                                        for (var i = 0; i < newRecords.length; i++) {
-                                            cswPanelAddHandler(newRecords[i]);
-                                        }
-                                    }
-                                });
-                            };
-
-                            //if we are still loading do nothing
-                            if (matchingRecordsCount === null || matchingRecordsCount === undefined) {
-                                return;
-                            }
-
-                            //If the user is going to add a LOT of records, ask them if they really want to proceed.
-                            //If they do limit them to stop them adding 3k records
-                            var softLimit = 10;
-                            var hardLimit = 100;
-                            if (matchingRecordsCount > softLimit) {
-                                Ext.MessageBox.show({
-                                    buttons : Ext.MessageBox.YESNO,
-                                    fn : addAllFn,
-                                    modal : true,
-                                    msg : String.format('You are trying to add {0} records. Adding more than {1} records at a time can cause serious performance problems. Are you sure you want to continue?',matchingRecordsCount,softLimit),
-                                    title : 'Too many records',
-                                    icon : Ext.MessageBox.QUESTION,
-                                    limit : hardLimit
-                                });
-                            } else {
-                                addAllFn('yes', '', {limit : matchingRecordsCount});
-                            }
-                        }
-                    },{
-                        xtype : 'button',
-                        text : 'Add Selected Records',
-                        iconCls : 'add',
-                        handler : function(button, e) {
-                            //Get our reference to our MultiCSWResultsPanel
-                            var multiFilterPanel = button.findParentByType('window').findByType('multicswresultspanel')[0];
-
-                            //Get our selected records
-                            var selection = multiFilterPanel.getSelectedCSWRecords();
-                            if (selection.length === 0) {
-                                return;
-                            }
-
-                            for (var i = 0; i < selection.length; i++) {
-                                cswPanelAddHandler(selection[i]);
-                            }
-                        }
-                    }]
-
-                });
-
-                win.show(this);
-            }
-        }]
-    });
-
-    var customLayersPanel = new CustomLayersGridPanel('custom-layers-panel',
-            'Custom Layers',
-            'Add your own WMS Layers',
-            customLayersStore,
-            cswPanelAddHandler,
-            showBoundsCSWRecord,
-            moveToBoundsCSWRecord);
-
- // basic tabs 1, built from existing content
+    // basic tabs 1, built from existing content
     var tabsPanel = new Ext.TabPanel({
         //width:450,
         activeTab: 0,
@@ -1322,8 +1430,6 @@ Ext.onReady(function() {
         ]
     });
 
-
-
     /**
      * Used as a placeholder for the tree and details panel on the left of screen
      */
@@ -1335,7 +1441,7 @@ Ext.onReady(function() {
         //margins: '100 0 0 0',
         margins:'100 0 0 3',
         width: 350,
-        items:[tabsPanel , activeLayersPanel]
+        items:[tabsPanel , activeLayersPanel, filterPanel]
     };
 
     /**
@@ -1469,6 +1575,23 @@ Ext.onReady(function() {
 
                     if (s.activeLayers[i].visible) {
                         loadLayer(activeLayerRec, s.activeLayers[i].filter);
+                    }
+
+                    //Prefill our filter panel (if we have the fields)
+                    var filterPanel = activeLayerRec.getFilterPanel();
+                    if (filterPanel && filterPanel.form && s.activeLayers[i].filter) {
+
+                        //Register for the load event
+                        var filterObj = s.activeLayers[i].filter;
+                        filterPanel.form.on('formloaded', function() {
+                            filterPanel.form.getForm().setValues(filterObj);
+
+                        });
+
+                        //If the even has already fired we can just load normally
+                        if (filterPanel.form.isFormLoaded) {
+                            filterPanel.form.getForm().setValues(filterObj);
+                        }
                     }
                 }
 

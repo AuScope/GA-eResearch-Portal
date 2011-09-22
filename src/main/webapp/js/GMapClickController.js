@@ -75,11 +75,6 @@ var gMapClickController = function(map, overlay, latlng, overlayLatlng, activeLa
         parentActiveLayerRecord = new ActiveLayersRecord(overlay.activeLayerRecord);
     }
 
-    var parentKnownLayer = null;
-    if (parentActiveLayerRecord) {
-        parentKnownLayer = parentActiveLayerRecord.getParentKnownLayer();
-    }
-
     //an instance of CSWRecord
     var parentCSWRecord = null;
     if (overlay && overlay.cswRecord) {
@@ -97,191 +92,191 @@ var gMapClickController = function(map, overlay, latlng, overlayLatlng, activeLa
         return;
     }
 
-    //If a polygon or marker has been clicked, we will have a direct link to the parentActiveLayerRecord
-    if (parentActiveLayerRecord) {
-        //Handle for WFS services (if any)
-        if (parentKnownLayer && parentKnownLayer.getType() === 'KnownLayerWFS') {
-            var wfsTypeName = parentOnlineResource.name;
-            var wfsUrl = parentOnlineResource.url;
+    //Markers are easy, just figure out what sort of marker it is
+    if (overlay instanceof GMarker) {
 
+        //WFS marker popups vary depending on their type
+        if (parentOnlineResource && parentOnlineResource.onlineResourceType === 'WFS') {
+            var featureTypeName = parentOnlineResource ? parentOnlineResource.name : '';
+            var wfsUrl = parentOnlineResource ? parentOnlineResource.url : '';
 
-            if (overlay instanceof GMarker) {
-                //This is a really bad hack to split NVCL and PressureDB
-                if (wfsTypeName === "gsml:Borehole" && wfsUrl.indexOf("pressuredb") >= 0) {
+            switch(featureTypeName) {
+            case 'ngcp:GnssStation':
+                var marker = new GeodesyMarker(wfsUrl, "geodesy:station_observations", overlay.title, overlay, overlay.description);
+                var clickFn = marker.getMarkerClickedFn();
+                clickFn();
+                break;
+            case 'gsml:GeologicUnit':
+                var featureId;
+                var geochemParserString = 'featureId:';
+                if (overlay.description.indexOf(geochemParserString) === 0){
+                    var indexOfSpace=overlay.description.indexOf('<');
+                    featureId = overlay.description.substring(geochemParserString.length,indexOfSpace);
+                }
+                var infoWindow = new YilgarnGeoInfoWindow(map,overlay,wfsUrl,featureId,featureTypeName);
+                infoWindow.show();
+                break;
+            case 'gsml:Borehole':
+                //Boreholes are just overly complex and we are hacking around a shortcoming with a few standards....
+                if (wfsUrl.indexOf('pressuredb') >= 0) {
                     var infoWindow = new PressureDbInfoWindow(map,overlay, wfsUrl);
                     infoWindow.show();
-                } else if (wfsTypeName === "gsml:Borehole") {
+                } else {
                     var infoWindow = new NvclInfoWindow(map,overlay, wfsUrl);
                     infoWindow.show();
                 }
-                else if (wfsTypeName == "ngcp:GnssStation") {
-                    var marker = new GeodesyMarker(wfsUrl, "geodesy:station_observations", overlay.title, overlay, overlay.description);
-                    var clickFn = marker.getMarkerClickedFn();
-                    clickFn();
-                }
-                else if (wfsTypeName == "gsml:GeologicUnit"){
-                    var featureId;
-                    var geochemParserString = 'featureId:';
-                    if (overlay.description.indexOf(geochemParserString) === 0){
-                        var indexOfSpace=overlay.description.indexOf('<');
-                        featureId = overlay.description.substring(geochemParserString.length,indexOfSpace);
-                    }
-                    var infoWindow = new YilgarnGeoInfoWindow(map,overlay,wfsUrl,featureId,wfsTypeName);
-                    infoWindow.show();
-
-                }
-                else if (overlay.description !== null) {
-                    overlay.openInfoWindowHtml(overlay.description, {maxWidth:800, maxHeight:600, autoScroll:true});
-                }
-            //Otherwise it could be a WFS polygon
-            } else if (overlay.description !== null) {
-                map.openInfoWindowHtml(overlay.getVertex(0),overlay.description);
+                break;
+            default:
+                overlay.openInfoWindowHtml(overlay.description, {maxWidth:800, maxHeight:600, autoScroll:true});
+                break;
             }
-            return;
-        }
-
-        //otherwise Handle for WCS services (if any)
-        cswRecords = parentActiveLayerRecord.getCSWRecordsWithType('WCS');
-        if (cswRecords.length !== 0) {
-
-            var infoWindow = new GenericWCSInfoWindow(map, overlay, parentOnlineResource.url, parentOnlineResource.name, parentCSWRecord);
-            infoWindow.showInfoWindow();
-            return;
-        }
-
-        //otherwise we treat the selection as a 'Report'
-        //If a polygon is selected, let's iterate all nearby polygons and maybe we'll find some that
-        //overlap in the clicked area (in which case we provide the user with a choice of what polygon they mean)
-        if (overlay instanceof GPolygon) {
-
-            //an array of objects containing the fields [text, cswRecord, overlay]
-            var intersectingOverlays = [];
-
-            //Iterate our active layers looking for polygons in the clicked area
-            for (var i = 0; i < activeLayersStore.getCount(); i++) {
-                var alr = activeLayersStore.getActiveLayerAt(i);
-                var overlayManager = alr.getOverlayManager();
-
-                for(var j = 0; j < overlayManager.overlayList.length; j++) {
-
-                    var overlayToTest = overlayManager.overlayList[j];
-
-                    //if this reportOverlay contains the clicked point, add it to the list
-                    if(overlayToTest instanceof GPolygon && overlayToTest.Contains(overlayLatlng)) {
-
-                        var cswRecord = new CSWRecord(overlayToTest.cswRecord);
-                        var shortTitle = cswRecord.getServiceName();
-                        if(shortTitle.length > 60) {
-                            shortTitle = shortTitle.substr(0, 60) + "...";
-                        }
-
-                        intersectingOverlays.push({
-                            text: shortTitle,
-                            cswRecord : cswRecord,
-                            overlay : overlayToTest
-                        });
-                    }
-                }
-            }
-
-            //if a single overlay has been selected show the info window otherwise give user the choice
-            if(intersectingOverlays.length == 1) {
-                var repWin = new ReportsInfoWindow(map, intersectingOverlays[0].overlay, intersectingOverlays[0].cswRecord);
-                repWin.show();
-            } else if(intersectingOverlays.length > 1) { //otherwise show the reports context menu
-
-                //TODO: Shouldn't need this here but for some unknown reason we do...
-                //If the reports popup menu is showing, destroy it.
-                var reportsMenu = Ext.getCmp('reportsMenu');
-                if(reportsMenu) {
-                    reportsMenu.destroy();
-                }
-
-                var menuItems = [];
-                for (var i = 0; i < intersectingOverlays.length; i++) {
-                    menuItems.push({
-                        text : intersectingOverlays[i].text,
-                        scope : intersectingOverlays[i],
-                        handler : function() {
-                            var repWin = new ReportsInfoWindow(map, this.overlay, this.cswRecord);
-                            repWin.show();
-                        }
-                    })
-                }
-
-                reportsMenu = new Ext.menu.Menu({
-                    id: 'reportsMenu',
-                    showSeparator: false,
-                    boxMaxHeight: 200,
-                    autoScroll: true,
-                    enableScrolling: true,
-                    items: menuItems
-                });
-
-                var pixel = map.fromLatLngToContainerPixel(overlayLatlng);
-                var container = Ext.getCmp('center_region');
-                reportsMenu.showAt([container.x + pixel.x, container.y + pixel.y]);
-                reportsMenu.syncSize();
-            }
-
-        } else if (overlay instanceof GMarker) {
+        } else if (parentCSWRecord) {
             var infoWindow = new ReportsInfoWindow(map, overlay, parentCSWRecord);
             infoWindow.show();
+        } else if (overlay.description) {
+            overlay.openInfoWindowHtml(overlay.description, {maxWidth:800, maxHeight:600, autoScroll:true});
         }
+        return;
+    }
+
+    //Polygon clicks are a little more tricky because they can overlap
+    //and it can be ambigous about what the user wants (so we ask them with a popup)
+    if (overlay instanceof GPolygon) {
+        //an array of objects containing the fields [text, cswRecord, overlay]
+        var intersectingOverlays = [];
+
+        //Iterate our active layers looking for polygons in the clicked area
+        for (var i = 0; i < activeLayersStore.getCount(); i++) {
+            var alr = activeLayersStore.getActiveLayerAt(i);
+            var overlayManager = alr.getOverlayManager();
+
+            for(var j = 0; j < overlayManager.overlayList.length; j++) {
+
+                var overlayToTest = overlayManager.overlayList[j];
+
+                //if this reportOverlay contains the clicked point, add it to the list
+                if(overlayToTest instanceof GPolygon && overlayToTest.Contains(overlayLatlng)) {
+
+                    var cswRecord = new CSWRecord(overlayToTest.cswRecord);
+                    var shortTitle = cswRecord.getServiceName();
+                    if(shortTitle.length > 60) {
+                        shortTitle = shortTitle.substr(0, 60) + "...";
+                    }
+
+                    intersectingOverlays.push({
+                        text: shortTitle,
+                        cswRecord : cswRecord,
+                        overlay : overlayToTest
+                    });
+                }
+            }
+        }
+
+        //Polygons will be either WCS or reports
+        var handleGPolygonSelection = function(map, intersectingOverlay) {
+            var wcsResources = intersectingOverlay.cswRecord.getFilteredOnlineResources('WCS');
+
+            if (wcsResources.length > 0) {
+                var infoWindow = new GenericWCSInfoWindow(map, intersectingOverlay.overlay, wcsResources[0].url, wcsResources[0].name, intersectingOverlay.cswRecord);
+                infoWindow.showInfoWindow();
+            } else {
+                var repWin = new ReportsInfoWindow(map, intersectingOverlay.overlay, intersectingOverlay.cswRecord);
+                repWin.show();
+            }
+        };
+
+
+        //if a single overlay has been selected show the info window otherwise give user the choice
+        if(intersectingOverlays.length == 1) {
+            handleGPolygonSelection(map, intersectingOverlays[0]);
+        } else if(intersectingOverlays.length > 1) { //otherwise show the reports context menu
+
+            //TODO: Shouldn't need this here but for some unknown reason we do...
+            //If the reports popup menu is showing, destroy it.
+            var reportsMenu = Ext.getCmp('reportsMenu');
+            if(reportsMenu) {
+                reportsMenu.destroy();
+            }
+
+            var menuItems = [];
+            for (var i = 0; i < intersectingOverlays.length; i++) {
+                menuItems.push({
+                    text : intersectingOverlays[i].text,
+                    scope : intersectingOverlays[i],
+                    handler : function() {
+                        handleGPolygonSelection(map, this);
+                    }
+                })
+            }
+
+            reportsMenu = new Ext.menu.Menu({
+                id: 'reportsMenu',
+                showSeparator: false,
+                boxMaxHeight: 200,
+                autoScroll: true,
+                enableScrolling: true,
+                items: menuItems
+            });
+
+            var pixel = map.fromLatLngToContainerPixel(overlayLatlng);
+            var container = Ext.getCmp('center_region');
+            reportsMenu.showAt([container.x + pixel.x, container.y + pixel.y]);
+            reportsMenu.syncSize();
+        }
+        return;
+    }
 
     //Otherwise we test each of our WMS layers to see if a click will affect them
-    }else {
-        //If the user clicks on an info window, we will still get click events, lets ignore these
-        if (latlng === null || latlng === undefined) {
-            return;
+    //If the user clicks on an info window, we will still get click events, lets ignore these
+    if (latlng === null || latlng === undefined) {
+        return;
+    }
+
+    //We will need to iterate over every WMS to see if they indicate a click event
+    for (var i = 0; i < activeLayersStore.getCount(); i++) {
+        var alr = new ActiveLayersRecord(activeLayersPanel.getStore().getAt(i));
+
+        if (!alr.getLayerVisible()) {
+            continue;
         }
 
-        //We will need to iterate over every WMS to see if they indicate a click event
-        for (var i = 0; i < activeLayersStore.getCount(); i++) {
-            var alr = new ActiveLayersRecord(activeLayersPanel.getStore().getAt(i));
+        var wcsCSWRecords = alr.getCSWRecordsWithType('WCS');
+        if(wcsCSWRecords.length !== 0){
+            continue;
+        }
 
-            if (!alr.getLayerVisible()) {
-                continue;
-            }
+        //each linked WMS record must be tested
+        var wmsCSWRecords = alr.getCSWRecordsWithType('WMS');
+        for (var j = 0; j < wmsCSWRecords.length; j++) {
+            var wmsOnlineResources = wmsCSWRecords[j].getFilteredOnlineResources('WMS');
 
-            var wcsCSWRecords = alr.getCSWRecordsWithType('WCS');
-            if(wcsCSWRecords.length !== 0){
-                continue;
-            }
+            for (var k = 0; k < wmsOnlineResources.length; k++) {
+                map.getDragObject().setDraggableCursor("pointer");
 
-            //each linked WMS record must be tested
-            var wmsCSWRecords = alr.getCSWRecordsWithType('WMS');
-            for (var j = 0; j < wmsCSWRecords.length; j++) {
-                var wmsOnlineResources = wmsCSWRecords[j].getFilteredOnlineResources('WMS');
+                var TileUtl = new Tile(map,latlng);
 
-                for (var k = 0; k < wmsOnlineResources.length; k++) {
-                    map.getDragObject().setDraggableCursor("pointer");
+                var wmsOnlineResource = wmsOnlineResources[k];
+                var typeName = wmsOnlineResource.name;
+                var serviceUrl = wmsOnlineResources[k].url;
 
-                    var TileUtl = new Tile(map,latlng);
+                var url = "wmsMarkerPopup.do";
+                url += "?WMS_URL=" + serviceUrl;
+                if( serviceUrl.substr(-1) !== "&" ) {
+                    url += '&';
+                }
+                url += "lat=" + latlng.lat();
+                url += "&lng=" + latlng.lng();
+                url += "&QUERY_LAYERS=" + typeName;
+                url += "&x=" + TileUtl.getTilePoint().x;
+                url += "&y=" + TileUtl.getTilePoint().y;
+                url += '&BBOX=' + TileUtl.getTileCoordinates();
+                url += '&WIDTH=' + TileUtl.getTileWidth();
+                url += '&HEIGHT=' + TileUtl.getTileHeight();
 
-                    var wmsOnlineResource = wmsOnlineResources[k];
-                    var typeName = wmsOnlineResource.name;
-                    var serviceUrl = wmsOnlineResources[k].url;
-
-                    var url = "wmsMarkerPopup.do";
-                    url += "?WMS_URL=" + serviceUrl;
-                    if( serviceUrl.substr(-1) !== "&" ) {
-                        url += '&';
-                    }
-                    url += "lat=" + latlng.lat();
-                    url += "&lng=" + latlng.lng();
-                    url += "&QUERY_LAYERS=" + typeName;
-                    url += "&x=" + TileUtl.getTilePoint().x;
-                    url += "&y=" + TileUtl.getTilePoint().y;
-                    url += '&BBOX=' + TileUtl.getTileCoordinates();
-                    url += '&WIDTH=' + TileUtl.getTileWidth();
-                    url += '&HEIGHT=' + TileUtl.getTileHeight();
-
-                    if(typeName.substring(0, typeName.indexOf(":")) == "gt") {
-                        handleGeotransectWmsRecord(url, wmsCSWRecords[j], wmsOnlineResource, map, latlng);
-                    } else {
-                        handleGenericWmsRecord(url, typeName, map, latlng);
-                    }
+                if(typeName.substring(0, typeName.indexOf(":")) == "gt") {
+                    handleGeotransectWmsRecord(url, wmsCSWRecords[j], wmsOnlineResource, map, latlng);
+                } else {
+                    handleGenericWmsRecord(url, typeName, map, latlng);
                 }
             }
         }
