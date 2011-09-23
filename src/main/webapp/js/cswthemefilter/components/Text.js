@@ -40,3 +40,5 @@ CSWThemeFilter.Text = Ext.extend(CSWThemeFilter.BaseComponent, {
         return true;
     }
 });
+
+Ext.reg('cswtext', CSWThemeFilter.Text);

@@ -18,7 +18,8 @@ CSWThemeFilter.BaseComponent = Ext.extend(Ext.form.FieldSet, {
             autoDestroy : true, //Ensure that as components get removed they are also destroyed
             isBaseComponent : true //how we identify base components
         }, {
-            style:'padding:5px 10px 0px 10px'
+            style:'padding:5px 10px 0px 10px',
+            collapsed : true
         });
         CSWThemeFilter.BaseComponent.superclass.constructor.call(this, cfg);
     },
@@ -62,3 +63,5 @@ CSWThemeFilter.BaseComponent = Ext.extend(Ext.form.FieldSet, {
         return false;
     }
 });
+
+Ext.reg('cswbasecomponent', CSWThemeFilter.BaseComponent);

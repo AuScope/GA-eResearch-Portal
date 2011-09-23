@@ -52,7 +52,12 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
         });
 
         //Load all components that can be selected in relation to a theme specific selection
+        this.themeComponents.push(CSWThemeFilter.CloudCover);
+        this.themeComponents.push(CSWThemeFilter.EODSID);
+        this.themeComponents.push(CSWThemeFilter.PlatformName);
         this.themeComponents.push(CSWThemeFilter.SensorType);
+        this.themeComponents.push(CSWThemeFilter.ProcessingLevel);
+
 
         //Build our configuration
         Ext.apply(cfg, {
@@ -60,16 +65,38 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
             items : [{
                 xtype : 'spacer',
                 height : 5
-            },
-            new CSWThemeFilter.Text({}), //This component is 'generic' and used by all CSW filters
-            new CSWThemeFilter.Keywords({}), //This component is 'generic' and used by all CSW filters
-            new CSWThemeFilter.Spatial({collapsed : true}), //This component is 'generic' and used by all CSW filters
-            {
+            },{
+              xtype : 'fieldset',
+              title : 'Search Generally',
+              collapsible : true,
+              border : true,
+              hideBorders : false,
+              items : [
+                  new CSWThemeFilter.Text({}), //This component is 'generic' and used by all CSW filters
+                  new CSWThemeFilter.Keywords({}), //This component is 'generic' and used by all CSW filters
+                  new CSWThemeFilter.Spatial({collapsed : true}), //This component is 'generic' and used by all CSW filters
+                  {
+                      xtype : 'fieldset',
+                      title : 'Registries',
+                      collapsible : true,
+                      collapsed : true,
+                      labelWidth : 10,
+                      border : false,
+                      listeners : {
+                          afterrender : function() {
+                              cswThemeFilterForm.cswServiceItemStore.load({
+                                  callback : cswThemeFilterForm._updateCSWList.createDelegate(cswThemeFilterForm)
+                              });
+                          }
+                      }
+                  }]
+            },{
                 xtype: 'fieldset',
                 title: 'Search by Theme',
+                border : true,
                 collapsible : true,
-                collapsed : true,
-                hideBorders: true,
+                hideBorders : true,
+                style:'padding:5px 10px 0px 10px',
                 items : [{
                     xtype : 'portalclearablecombo',
                     hideBorders : true,
@@ -114,20 +141,6 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
                         }
                     }
                 }]
-            },{
-                xtype : 'fieldset',
-                title : 'Locations to search',
-                collapsible : true,
-                collapsed : true,
-                hideBorders : false,
-
-                listeners : {
-                    afterrender : function() {
-                        cswThemeFilterForm.cswServiceItemStore.load({
-                            callback : cswThemeFilterForm._updateCSWList.createDelegate(cswThemeFilterForm)
-                        });
-                    }
-                }
             }]
         });
 
@@ -139,14 +152,15 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
      * Gets the parent field set containing all repositories to be searched
      */
     _getRepositoryFieldSet : function() {
-        return this.items.get(this.items.getCount() - 1);
+        var parentFieldSet = this.items.get(1);
+        return parentFieldSet.items.get(parentFieldSet.items.getCount() - 1);
     },
 
     /**
      * Gets the parent field set containing the them selection
      */
     _getThemeFieldSet : function() {
-        return this.items.get(this.items.getCount() - 2);
+        return this.items.get(this.items.getCount() - 1);
     },
 
     /**
@@ -185,19 +199,7 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
      * Returns every instance of a BaseComponent object that is a child of this object as an Array
      */
     _getAllBaseComponents : function() {
-        var defaultComponents = this.items.filterBy(this._isBaseComponentFilterFn);
-        var themeComponents = this._getThemeComponents();
-        var result = [];
-
-        //Concat our collections into an array
-        defaultComponents.each(function(item) {
-            result.push(item);
-        });
-        themeComponents.each(function(item) {
-            result.push(item);
-        });
-
-        return result;
+        return this.findByType('cswbasecomponent');
     },
 
 
@@ -231,7 +233,6 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
         }
         parentFieldSet.insert(1, {
             xtype : 'checkboxgroup',
-            fieldLabel : 'Registries',
             columns : 1,
             items : checkBoxItems
         });

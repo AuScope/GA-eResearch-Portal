@@ -269,3 +269,5 @@ CSWThemeFilter.Spatial = Ext.extend(CSWThemeFilter.BaseComponent, {
         this._clearBoundsHandler();
     }
 });
+
+Ext.reg('cswspatial', CSWThemeFilter.Spatial);

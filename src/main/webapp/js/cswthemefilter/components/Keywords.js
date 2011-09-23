@@ -231,3 +231,5 @@ CSWThemeFilter.Keywords = Ext.extend(CSWThemeFilter.BaseComponent, {
         return true;
     }
 });
+
+Ext.reg('cswkeywords', CSWThemeFilter.Keywords);
