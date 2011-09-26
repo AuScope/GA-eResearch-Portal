@@ -158,14 +158,20 @@ var gMapClickController = function(map, overlay, latlng, overlayLatlng, activeLa
                 if(overlayToTest instanceof GPolygon && overlayToTest.Contains(overlayLatlng)) {
 
                     var cswRecord = new CSWRecord(overlayToTest.cswRecord);
+                    var onlineResource = overlayToTest.onlineResource;
                     var shortTitle = cswRecord.getServiceName();
-                    if(shortTitle.length > 60) {
-                        shortTitle = shortTitle.substr(0, 60) + "...";
+                    var maxTitleLength = 90;
+                    if (onlineResource && onlineResource.name) {
+                        shortTitle += ' - ' + onlineResource.name;
+                    }
+                    if(shortTitle.length > maxTitleLength) {
+                        shortTitle = shortTitle.substr(0, maxTitleLength) + "...";
                     }
 
                     intersectingOverlays.push({
                         text: shortTitle,
                         cswRecord : cswRecord,
+                        onlineResource : onlineResource,
                         overlay : overlayToTest
                     });
                 }
@@ -174,10 +180,8 @@ var gMapClickController = function(map, overlay, latlng, overlayLatlng, activeLa
 
         //Polygons will be either WCS or reports
         var handleGPolygonSelection = function(map, intersectingOverlay) {
-            var wcsResources = intersectingOverlay.cswRecord.getFilteredOnlineResources('WCS');
-
-            if (wcsResources.length > 0) {
-                var infoWindow = new GenericWCSInfoWindow(map, intersectingOverlay.overlay, wcsResources[0].url, wcsResources[0].name, intersectingOverlay.cswRecord);
+            if (intersectingOverlay.onlineResource && intersectingOverlay.onlineResource.onlineResourceType ==='WCS') {
+                var infoWindow = new GenericWCSInfoWindow(map, intersectingOverlay.overlay, intersectingOverlay.onlineResource.url, intersectingOverlay.onlineResource.name, intersectingOverlay.cswRecord);
                 infoWindow.showInfoWindow();
             } else {
                 var repWin = new ReportsInfoWindow(map, intersectingOverlay.overlay, intersectingOverlay.cswRecord);

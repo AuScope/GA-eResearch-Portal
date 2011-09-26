@@ -230,7 +230,7 @@ Ext.onReady(function() {
                             var multiFilterPanel = button.findParentByType('window').findByType('multicswresultspanel')[0];
                             var matchingRecordsCount = multiFilterPanel.getMatchingCSWRecordsCount();
                             var addAllFn = function(buttonId, text, opts) {
-                                if (buttonId !== 'yes' && butonId !== 'ok') {
+                                if (buttonId !== 'yes' && buttonId !== 'ok') {
                                     return;
                                 }
                                 var loadMask = new Ext.LoadMask(Ext.getBody(), {
@@ -597,35 +597,42 @@ Ext.onReady(function() {
             var wcsOnlineResources = cswRecords[i].getFilteredOnlineResources('WCS');
             var geographyEls = cswRecords[i].getGeographicElements();
 
-            //Assumption - We only contain a single WCS in a CSWRecord (although more would be possible)
-            var wcsOnlineResource = wcsOnlineResources[0];
+            for (var j = 0; j < wcsOnlineResources.length; j++) {
+                var wcsOnlineResource = wcsOnlineResources[j];
 
-            if (geographyEls.length === 0) {
-                responseTooltip.addResponse(wcsOnlineResource.url, 'No bounding box has been specified for this coverage.');
-                continue;
-            }
-
-            //We will need to add the bounding box polygons regardless of whether we have a WMS service or not.
-            //The difference is that we will make the "WMS" bounding box polygons transparent but still clickable
-            var polygonList = [];
-            for (var j = 0; j < geographyEls.length; j++) {
-                var thisPolygon = null;
-                if (wmsOnlineResources.length > 0) {
-                    thisPolygon = geographyEls[j].toGMapPolygon('#000000', 0, 0.0,'#000000', 0.0);
-                } else {
-                    thisPolygon = geographyEls[j].toGMapPolygon('#FF0000', 0, 0.7,'#FF0000', 0.6);
+                if (geographyEls.length === 0) {
+                    responseTooltip.addResponse(wcsOnlineResource.url, 'No bounding box has been specified for this coverage.');
+                    continue;
                 }
 
-                polygonList = polygonList.concat(thisPolygon);
+                //We will need to add the bounding box polygons regardless of whether we have a WMS service or not.
+                //The difference is that we will make the "WMS" bounding box polygons transparent but still clickable
+                var polygonList = [];
+                for (var k = 0; k < geographyEls.length; k++) {
+                    var thisPolygon = null;
+                    if (wmsOnlineResources.length > 0) {
+                        thisPolygon = geographyEls[k].toGMapPolygon('#000000', 0, 0.0,'#000000', 0.0);
+                    } else {
+                        thisPolygon = geographyEls[k].toGMapPolygon('#FF0000', 0, 0.7,'#FF0000', 0.6);
+                    }
+
+                    polygonList = polygonList.concat(thisPolygon);
+                }
+
+                //Add our overlays (they will be used for clicking so store some extra info)
+                for (var k = 0; k < polygonList.length; k++) {
+                    polygonList[k].onlineResource = wcsOnlineResource;
+                    polygonList[k].cswRecord = cswRecords[i].internalRecord;
+                    polygonList[k].activeLayerRecord = activeLayerRecord.internalRecord;
+
+                    overlayManager.addOverlay(polygonList[k]);
+                }
             }
 
-            //Add our overlays (they will be used for clicking so store some extra info)
-            for (var j = 0; j < polygonList.length; j++) {
-                polygonList[j].onlineResource = wcsOnlineResource;
-                polygonList[j].cswRecord = cswRecords[i].internalRecord;
-                polygonList[j].activeLayerRecord = activeLayerRecord.internalRecord;
-
-                overlayManager.addOverlay(polygonList[j]);
+            //GA-53 This is a GA specific hack to ensure that EODS coverages only show the false colour WMS (not the other WMS's)
+            var falseColorWMSResources = cswRecords[i].getFilteredOnlineResources('WMS', 'False741');
+            if (falseColorWMSResources.length > 0) {
+                wmsOnlineResources = falseColorWMSResources;
             }
 
             //Add our WMS tiles (if any)
@@ -1626,4 +1633,28 @@ Ext.onReady(function() {
             });
         }
     };
+
+    /*//{//DELETE ME BACON (IF THIS GETS COMMITTED GO YELL AT JOSH!)
+        var win = new Ext.Window({
+            title : 'test',
+            width : 425,
+            height : 250,
+            layout : 'fit',
+            items : [{
+                xtype : 'form',
+                hideBorders : true,
+                items : [{
+                    xtype : 'fieldset',
+                    title : 'Multiple Words Title',
+                    style : 'width:200px;',
+                    items : [{
+                        xtype :'textfield',
+                        fieldLabel : 'My Label'
+                    }]
+                }]
+            }]
+        });
+
+        win.show();
+    //}//END DELETE ME BACON*/
 });
