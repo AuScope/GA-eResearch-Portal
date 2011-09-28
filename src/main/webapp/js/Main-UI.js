@@ -430,6 +430,13 @@ Ext.onReady(function() {
             return;
         }
 
+        //Always ensure we have an overlay manager
+        var overlayManager = activeLayerRecord.getOverlayManager();
+        if (!overlayManager) {
+            overlayManager = new OverlayManager(map);
+            activeLayerRecord.setOverlayManager(overlayManager);
+        }
+
         activeLayerRecord.setLayerVisible(isChecked);
 
         if (isChecked) {
@@ -629,30 +636,13 @@ Ext.onReady(function() {
                 }
             }
 
-            //GA-53 This is a GA specific hack to ensure that EODS coverages only show the false colour WMS (not the other WMS's)
-            var falseColorWMSResources = cswRecords[i].getFilteredOnlineResources('WMS', 'False741');
-            if (falseColorWMSResources.length > 0) {
-                wmsOnlineResources = falseColorWMSResources;
-            }
-
-            //Add our WMS tiles (if any)
-            for (var j = 0; j < wmsOnlineResources.length; j++) {
-                var tileLayer = new GWMSTileLayer(map, new GCopyrightCollection(""), 1, 17);
-                tileLayer.baseURL = wmsOnlineResources[j].url;
-                tileLayer.layers = wmsOnlineResources[j].name;
-                tileLayer.opacity = activeLayerRecord.getOpacity();
-
-                overlayManager.addOverlay(new GTileLayerOverlay(tileLayer));
-            }
-
             if(wcsOnlineResources.length > 0 || wmsOnlineResources.length > 0) {
                 activeLayerRecord.setHasData(true);
             }
         }
 
-
-        //This will update the Z order of our WMS layers
-        updateActiveLayerZOrder();
+        //Now add our WMS components
+        wmsHandler(activeLayerRecord, true);
     };
 
     var wfsHandler = function(activeLayerRecord, overrideFilterParams) {
@@ -853,7 +843,7 @@ Ext.onReady(function() {
         });
     };
 
-    var wmsHandler = function(activeLayerRecord) {
+    var wmsHandler = function(activeLayerRecord, preserveOverlays) {
 
         //Get our overlay manager (create if required).
         var overlayManager = activeLayerRecord.getOverlayManager();
@@ -861,10 +851,12 @@ Ext.onReady(function() {
             overlayManager = new OverlayManager(map);
             activeLayerRecord.setOverlayManager(overlayManager);
         }
-        overlayManager.clearOverlays();
+        if (!preserveOverlays) {
+            overlayManager.clearOverlays();
+        }
 
         //Add each and every WMS we can find
-        var cswRecords = activeLayerRecord.getCSWRecordsWithType('WMS');
+        var cswRecords = activeLayerRecord.getCSWRecords();
         for (var i = 0; i < cswRecords.length; i++) {
             var wmsOnlineResources = cswRecords[i].getFilteredOnlineResources('WMS');
             for (var j = 0; j < wmsOnlineResources.length; j++) {
@@ -1633,28 +1625,4 @@ Ext.onReady(function() {
             });
         }
     };
-
-    /*//{//DELETE ME BACON (IF THIS GETS COMMITTED GO YELL AT JOSH!)
-        var win = new Ext.Window({
-            title : 'test',
-            width : 425,
-            height : 250,
-            layout : 'fit',
-            items : [{
-                xtype : 'form',
-                hideBorders : true,
-                items : [{
-                    xtype : 'fieldset',
-                    title : 'Multiple Words Title',
-                    style : 'width:200px;',
-                    items : [{
-                        xtype :'textfield',
-                        fieldLabel : 'My Label'
-                    }]
-                }]
-            }]
-        });
-
-        win.show();
-    //}//END DELETE ME BACON*/
 });
