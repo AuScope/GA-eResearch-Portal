@@ -13,19 +13,11 @@ CSWThemeFilter.BaseComponent = Ext.extend(PortalFieldSet, {
      * }
      */
     constructor : function(cfg) {
-
-        var styleString = 'padding:5px 10px 0px 10px;';
-        if (Ext.isIE) {
-            //To deal with bug http://www.sencha.com/forum/showthread.php?148067-Fieldset-titles-with-hidden-borders-problems-under-IE&p=651704
-            styleString += 'white-space: nowrap;';
-        }
-
-
         Ext.apply(cfg, {
             autoDestroy : true, //Ensure that as components get removed they are also destroyed
             isBaseComponent : true //how we identify base components
         }, {
-            style: styleString,
+            style: 'padding:5px 10px 0px 10px;',
             collapsed : true
         });
         CSWThemeFilter.BaseComponent.superclass.constructor.call(this, cfg);
