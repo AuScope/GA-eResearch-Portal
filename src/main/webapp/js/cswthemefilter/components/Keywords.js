@@ -37,8 +37,10 @@ CSWThemeFilter.Keywords = Ext.extend(CSWThemeFilter.BaseComponent, {
             title : 'Match Keywords',
             collapsible : true,
             border : false,
+            layout : 'anchor',
             items : [{
                 xtype : 'panel',
+                anchor : '100%',
                 layout: 'form',
                 border : false,
                 items : [{
@@ -58,6 +60,7 @@ CSWThemeFilter.Keywords = Ext.extend(CSWThemeFilter.BaseComponent, {
             },{
                 xtype : 'fieldset',
                 layout : 'column',
+                anchor : '100%',
                 border : false,
                 style : 'padding:5px 10px 0px 10px',
                 items : [{
@@ -76,7 +79,8 @@ CSWThemeFilter.Keywords = Ext.extend(CSWThemeFilter.BaseComponent, {
                     border : false,
                     bodyStyle:'padding:0px 0 0px 2px',
                     items : []
-                }]
+                }],
+
             }],
             listeners : {
                 afterrender : function() {
@@ -200,7 +204,6 @@ CSWThemeFilter.Keywords = Ext.extend(CSWThemeFilter.BaseComponent, {
         this.keywordIDCounter++;
         this.updateAddRemoveButtons();
         this.doLayout();
-
     },
 
     /**

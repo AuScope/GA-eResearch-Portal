@@ -66,7 +66,7 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
                 xtype : 'spacer',
                 height : 5
             },{
-              xtype : 'fieldset',
+              xtype : 'portalfieldset',
               title : 'Search Generally',
               collapsible : true,
               border : true,
@@ -76,7 +76,7 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
                   new CSWThemeFilter.Keywords({}), //This component is 'generic' and used by all CSW filters
                   new CSWThemeFilter.Spatial({collapsed : true}), //This component is 'generic' and used by all CSW filters
                   {
-                      xtype : 'fieldset',
+                      xtype : 'portalfieldset',
                       title : 'Registries',
                       collapsible : true,
                       collapsed : true,
@@ -91,7 +91,7 @@ CSWThemeFilterForm = Ext.extend(Ext.form.FormPanel, {
                       }
                   }]
             },{
-                xtype: 'fieldset',
+                xtype: 'portalfieldset',
                 title: 'Search by Theme',
                 border : true,
                 collapsible : true,

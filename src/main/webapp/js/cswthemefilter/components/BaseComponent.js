@@ -4,7 +4,7 @@ Ext.namespace("CSWThemeFilter");
 /**
  * The 'abstract' base component for all CSWThemeFilterForm components to extend from
  */
-CSWThemeFilter.BaseComponent = Ext.extend(Ext.form.FieldSet, {
+CSWThemeFilter.BaseComponent = Ext.extend(PortalFieldSet, {
     /**
      * Constructor for this class, accepts all configuration options that can
      * be specified for a Ext.form.FieldSet as well as the following extensions
@@ -14,11 +14,18 @@ CSWThemeFilter.BaseComponent = Ext.extend(Ext.form.FieldSet, {
      */
     constructor : function(cfg) {
 
+        var styleString = 'padding:5px 10px 0px 10px;';
+        if (Ext.isIE) {
+            //To deal with bug http://www.sencha.com/forum/showthread.php?148067-Fieldset-titles-with-hidden-borders-problems-under-IE&p=651704
+            styleString += 'white-space: nowrap;';
+        }
+
+
         Ext.apply(cfg, {
             autoDestroy : true, //Ensure that as components get removed they are also destroyed
             isBaseComponent : true //how we identify base components
         }, {
-            style:'padding:5px 10px 0px 10px',
+            style: styleString,
             collapsed : true
         });
         CSWThemeFilter.BaseComponent.superclass.constructor.call(this, cfg);
