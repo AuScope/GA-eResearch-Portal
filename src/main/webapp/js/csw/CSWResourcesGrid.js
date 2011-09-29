@@ -15,7 +15,6 @@ CSWResourcesGrid = Ext.extend(Ext.grid.GridPanel, {
      *  cswRecords : Array of CSWRecord objects or a single CSWRecord object
      *  allowSelection : [Optional, default false] - whether this grid will show a column of check boxes.
      *                   Use getSelectedResources to access what resources have been selected
-     *  defaultSelection : [Optional, default false] - The default value for each selection
      *  onlineResourceFilter : [Optional] function(Object, CSWRecord) - a function that will be called on every CSW online resource
      *                         which should return true if the online resource should be rendered or false if not
      * }
@@ -254,20 +253,6 @@ CSWResourcesGrid = Ext.extend(Ext.grid.GridPanel, {
         //Call parent constructor
         CSWResourcesGrid.superclass.constructor.call(this, cfg);
 
-        if (cfg.defaultSelection) {
-            this.on('afterrender', function(cmp) {
-                //This is an annoying workaround to ensure the selection shows (if this fires
-                //too quickly then the checkboxes won't render as checked)
-                var task = new Ext.util.DelayedTask(function(){
-                    cmp.getSelectionModel().silent = true;
-                    cmp.getSelectionModel().selectAll();
-                    cmp.getSelectionModel().silent = false;
-                });
-
-                task.delay(500);
-            });
-        }
-
         this.addEvents('resourceselect', 'resourcedeselect');
     },
 
@@ -317,12 +302,35 @@ CSWResourcesGrid = Ext.extend(Ext.grid.GridPanel, {
 
         for (var i = 0; i < selectedRecords.length; i++) {
             this.selectedResources.push({
-                onlineResource : selectedRecords[i].get(3),
-                cswRecord : this.cswRecords[selectedRecords[i].get(5)]
+                onlineResource : selectedRecords[i].get('preview'),
+                cswRecord : this.cswRecords[selectedRecords[i].get('cswRecordIndex')]
             })
         }
 
         return selectedResources;
+    },
+
+    /**
+     * Gets the list of CSWRecord/CSWOnlineResource objects as an Array.
+     * The response consists of an Array of objects matching
+     * {
+     *  onlineResource : Object - An object matching the CSW OnlineResource object type.
+     *  cswRecord : CSWRecord - the CSWRecord that 'owns' the selected onlineResource
+     * }
+     */
+    getAllResources : function() {
+        var store = this.getStore();
+        var grid = this;
+        var resources = [];
+
+        store.each(function(rec) {
+            resources.push({
+                onlineResource : rec.get('preview'),
+                cswRecord : grid.cswRecords[rec.get('cswRecordIndex')]
+            });
+        });
+
+        return resources;
     }
 });
 

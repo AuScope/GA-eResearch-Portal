@@ -72,6 +72,7 @@ WMSLayerFilterForm = function(activeLayerRecord, map) {
             style : 'padding:0px',
             bodyStyle : 'padding:2px',
             hidden : (totalWMSResources <= 1),
+            forceLayout : true,
             listeners : {
                 //This exists to prevent the horizontal scroll bar from showing whenever
                 //the vertical scroll bar shows (extjs doesn't seem to re-layout correctly
@@ -100,7 +101,6 @@ WMSLayerFilterForm = function(activeLayerRecord, map) {
                 cswRecords : cswRecords,
                 border : false,
                 allowSelection : true,
-                defaultSelection : true,
                 onlineResourceFilter : function(onlineResource, cswRecord) {
                     return onlineResource.onlineResourceType === 'WMS';
                 },
@@ -119,6 +119,38 @@ WMSLayerFilterForm = function(activeLayerRecord, map) {
                             tileLayerOverlay.hide();
                         }
                     },
+                    //After rendering select all of our rows (as by default we display ALL WMS's)
+                    afterrender : function(grid) {
+                        //This is a workaround specific to GA - ensure the False741 layer is the only WMS layer
+                        //initially selected
+                        ///Firstly look for a 'False741' layer record
+                        var allResources = grid.getAllResources();
+                        var resourceToSelectIndex = -1;
+                        for (var i = 0; i < allResources.length; i++) {
+                            if (allResources[i].onlineResource.name === 'False741') {
+                                resourceToSelectIndex = i;
+                                break;
+                            }
+                        }
+
+                        //Row selection is funny immediately after render. To workaround
+                        //perform the selection on a slight delay.
+                        var selectTask = new Ext.util.DelayedTask(function(){
+                            //Perform the selection silently to avoid
+                            //unnecessary layer lookups
+                            var sm = grid.getSelectionModel();
+                            sm.silent = true;
+                            sm.selectAll();
+                            sm.silent = false;
+
+                            //If we need to enable only the False741 layer, now is the time to do it
+                            if (resourceToSelectIndex >= 0) {
+                                sm.selectRow(resourceToSelectIndex, false);
+                            }
+
+                        });
+                        selectTask.delay(1000);
+                    }
                 }
             }]
         }]
