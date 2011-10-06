@@ -496,62 +496,6 @@
         </Placemark>
     </xsl:template>
 
-    <!-- TEMPLATE FOR TRANSLATING Yilgarn Geochemistry -->
-   <!-- ================================================================= -->
-   <xsl:template match="gml:featureMember/gsml:GeologicUnit | gml:featureMembers/gsml:GeologicUnit" priority="100">
-
-      <xsl:variable name="coordinates">
-         <xsl:value-of select="./gsml:occurrence/gsml:MappedFeature/gsml:shape/gml:Point/gml:pos"/>
-      </xsl:variable>
-      <xsl:variable name="observationMethod">
-         <xsl:value-of select="./gsml:occurrence/gsml:MappedFeature/gsml:observationMethod/gsml:CGI_TermValue/gsml:value[@codeSpace='www.ietf.org/rfc/rfc1738']"/>
-      </xsl:variable>
-      <xsl:variable name="rockMaterial">
-         <xsl:value-of select="./gsml:composition/gsml:CompositionPart/gsml:material/gsml:RockMaterial/gsml:lithology/@xlink:href"/>
-      </xsl:variable>
-      <xsl:variable name="proportion">
-         <xsl:value-of select="./gsml:composition/gsml:CompositionPart/gsml:proportion/gsml:CGI_TermValue/gsml:value"/>
-      </xsl:variable>
-     <Placemark>
-        <name><xsl:value-of select="@gml:id"/></name>
-        <description>
-           <xsl:text>featureId:</xsl:text><xsl:value-of select="@gml:id"/>
-           <xsl:call-template name="start-table"></xsl:call-template>
-           <![CDATA[<tr><td>Name</td><td>]]>
-           <xsl:call-template name="make-wfspopup-url">
-               <xsl:with-param name="friendly-name" select="@gml:id"/>
-               <xsl:with-param name="real-url">
-               <xsl:value-of select="$serviceURL"/><xsl:value-of select="$gsmlGeoUnitString"/><xsl:value-of select="@gml:id"/></xsl:with-param>
-           </xsl:call-template><![CDATA[</td></tr>]]>
-           <![CDATA[<tr><td>Location</td><td>]]>
-           <xsl:call-template name="swapLatLongCoord">
-               <xsl:with-param name="coordinates" select="./gsml:occurrence/gsml:MappedFeature/gsml:shape/gml:Point"/>
-           </xsl:call-template><![CDATA[</td></tr>]]>
-           <![CDATA[<tr><td>Observation Method</td><td>]]>
-           <xsl:call-template name="make-popup-url">
-               <xsl:with-param name="friendly-name" select="$observationMethod"/>
-               <xsl:with-param name="real-url" select = "concat($vocab-hard-coded-lookupCGI,$observationMethod)"/>
-           </xsl:call-template><![CDATA[</td></tr>]]>
-           <![CDATA[<tr><td>Rock Material</td><td>]]>
-           <xsl:call-template name="make-popup-url">
-               <xsl:with-param name="friendly-name" select="$rockMaterial"/>
-               <xsl:with-param name="real-url" select = "concat($vocab-hard-coded-lookupCGI,$rockMaterial)"/>
-           </xsl:call-template><![CDATA[</td></tr>]]>
-           <![CDATA[<tr><td>Proportion</td><td>]]>
-           <xsl:call-template name="make-popup-url">
-               <xsl:with-param name="friendly-name" select="$proportion"/>
-               <xsl:with-param name="real-url" select = "concat($vocab-hard-coded-lookupCGI,$proportion)"/>
-           </xsl:call-template><![CDATA[</td></tr>]]>
-           <![CDATA[<tr><td>Weathering Description</td><td>]]><xsl:value-of select="./gsml:weatheringCharacter/gsml:WeatheringDescription/gsml:weatheringProduct/gsml:RockMaterial/gsml:lithology/@xlink:href"/><![CDATA[</td></tr>]]>
-           <![CDATA[</table></div>]]>
-        </description>
-
-        <xsl:apply-templates select="./gsml:occurrence/gsml:MappedFeature/gsml:shape/gml:Point"/>
-     </Placemark>
-   </xsl:template>
-
-
-
    <!-- TEMPLATE FOR TRANSLATING GNSS -->
    <!-- ================================================================= -->
    <xsl:template match="gml:featureMembers/sa:SamplingPoint">
@@ -915,7 +859,23 @@
    <xsl:template name="make-wfspopup-url">
       <xsl:param name="friendly-name"/>
       <xsl:param name="real-url"/>
-      <![CDATA[<a href="#" onclick="var w=window.open('wfsFeaturePopup.do?url=]]><xsl:value-of select="$real-url"/><![CDATA[','AboutWin','toolbar=no, menubar=no,location=no,resizable=yes,scrollbars=yes,statusbar=no,height=450,width=820');w.focus();return false;">]]><xsl:value-of select="$friendly-name"/><![CDATA[</a>]]></xsl:template>
+
+      <!-- Highly simplified escaping -->
+      <xsl:variable name="escaped-url">
+        <xsl:call-template name="string-replace-all">
+            <xsl:with-param name="text">
+                <xsl:call-template name="string-replace-all">
+                    <xsl:with-param name="text" select="$real-url"/>
+                    <xsl:with-param name="replace" select="'&amp;'"/>
+                    <xsl:with-param name="by" select="'%26'"/>
+                </xsl:call-template>
+            </xsl:with-param>
+            <xsl:with-param name="replace" select="'?'"/>
+            <xsl:with-param name="by" select="'%3F'"/>
+        </xsl:call-template>
+      </xsl:variable>
+
+      <![CDATA[<a href="#" onclick="var w=window.open('wfsFeaturePopup.do?url=]]><xsl:value-of select="$escaped-url"/><![CDATA[','AboutWin','toolbar=no, menubar=no,location=no,resizable=yes,scrollbars=yes,statusbar=no,height=450,width=820');w.focus();return false;">]]><xsl:value-of select="$friendly-name"/><![CDATA[</a>]]></xsl:template>
 
    <!-- ================================================================= -->
    <!--    This function creates the generic table cdata header           -->
@@ -924,4 +884,27 @@
    -->
    <xsl:template name="start-table"><![CDATA[<div style='min-width: 40px; max-width:650px; min-height: 40px; max-height: 350px; overflow: auto;"'><table border="1" cellpadding="4" class="auscopeTable">]]>
    </xsl:template>
+
+    <!-- Sourced from http://geekswithblogs.net/Erik/archive/2008/04/01/120915.aspx -->
+    <xsl:template name="string-replace-all">
+        <xsl:param name="text" />
+        <xsl:param name="replace" />
+        <xsl:param name="by" />
+        <xsl:choose>
+            <xsl:when test="contains($text, $replace)">
+                <xsl:value-of select="substring-before($text,$replace)" />
+                <xsl:value-of select="$by" />
+                <xsl:call-template name="string-replace-all">
+                    <xsl:with-param name="text"
+                        select="substring-after($text,$replace)" />
+                    <xsl:with-param name="replace"
+                        select="$replace" />
+                    <xsl:with-param name="by" select="$by" />
+                </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$text" />
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
 </xsl:stylesheet>
