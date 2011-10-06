@@ -17,10 +17,11 @@
 
 FormFactory = function() {};
 
-FormFactory.prototype.internalGenerateResult = function(form, supportsFiltering) {
+FormFactory.prototype.internalGenerateResult = function(form, supportsFiltering, proxyUrl) {
     return {
         form				: form,
-        supportsFiltering	: supportsFiltering
+        supportsFiltering	: supportsFiltering,
+        proxyUrl            : proxyUrl //can be undefined
     };
 };
 
@@ -50,11 +51,11 @@ FormFactory.prototype.getFilterForm = function(activeLayersRecord, map) {
             //Look for a specific WFS feature we can filter on (we may not find any)
             for (var j = 0; j < wfsResources.length; j++) {
                 switch(wfsResources[j].name) {
-                case 'er:Mine': return this.internalGenerateResult(new MineFilterForm(id), true);
-                case 'er:MiningActivity': return this.internalGenerateResult(new MiningActivityFilterForm(id), true);
-                case 'er:MineralOccurrence': return this.internalGenerateResult(new MineralOccurrenceFilterForm(id), true);
-                case 'gsml:GeologicUnit': return this.internalGenerateResult(new YilgarnGeochemistryFilterForm(id), true);
-                case 'gsml:Borehole': return this.internalGenerateResult(new BoreholeFilterForm(id), true);
+                case 'er:Mine': return this.internalGenerateResult(new MineFilterForm(id), true, 'doMineFilter.do');
+                case 'er:MiningActivity': return this.internalGenerateResult(new MiningActivityFilterForm(id), true, 'doMiningActivityFilter.do');
+                case 'er:MineralOccurrence': return this.internalGenerateResult(new MineralOccurrenceFilterForm(id), true, 'doMineralOccurrenceFilter.do');
+                case 'gsml:GeologicUnit': return this.internalGenerateResult(new YilgarnGeochemistryFilterForm(id), true, 'doYilgarnGeochemistry.do');
+                case 'gsml:Borehole': return this.internalGenerateResult(new BoreholeFilterForm(id), true, 'doBoreholeFilter.do');
                 }
             }
 

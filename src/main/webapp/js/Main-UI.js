@@ -446,6 +446,9 @@ Ext.onReady(function() {
             if (!filterPanelObj) {
                 filterPanelObj = formFactory.getFilterForm(activeLayerRecord, map);
                 activeLayerRecord.setFilterPanel(filterPanelObj);
+                if (filterPanelObj.proxyUrl) {
+                    activeLayerRecord.setProxyUrl(filterPanelObj.proxyUrl); //our filter panel defines what URL we should proxy our filter requests to
+                }
             }
 
             //If the filter panel already exists, this may be a case where we are retriggering visiblity

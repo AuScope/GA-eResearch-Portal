@@ -40,6 +40,15 @@ ActiveLayersRecord = Ext.extend(AbstractRecordWrapper, {
     },
 
     /**
+     * Sets the Proxy URL of this active layer as a String (or null)
+     *
+     * The Proxy URL is the url that should be queried instead of the onlineResource URL.
+     */
+    setProxyUrl : function(newUrl) {
+        return this.internalRecord.set('proxyUrl', newUrl);
+    },
+
+    /**
      * Gets an array of CSWRecord objects that represent this layer
      */
     getCSWRecords : function() {
