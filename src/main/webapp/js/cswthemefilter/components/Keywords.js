@@ -79,8 +79,7 @@ CSWThemeFilter.Keywords = Ext.extend(CSWThemeFilter.BaseComponent, {
                     border : false,
                     bodyStyle:'padding:0px 0 0px 2px',
                     items : []
-                }],
-
+                }]
             }],
             listeners : {
                 afterrender : function() {

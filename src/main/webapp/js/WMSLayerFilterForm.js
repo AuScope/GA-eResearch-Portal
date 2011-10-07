@@ -92,7 +92,7 @@ WMSLayerFilterForm = function(activeLayerRecord, map) {
                     });
 
                     task.delay(50);
-                },
+                }
             },
             items : [{
                 xtype : 'cswresourcesgrid',
