@@ -12,6 +12,15 @@ Ext.Ajax.defaultHeaders = {
     'Accept-Encoding': 'gzip, deflate' //This ensures we use gzip for most of our requests (where available)
 };
 
+var GMAP_ICON_LIST = ['http://maps.google.com/mapfiles/kml/paddle/blu-blank.png',
+                      'http://maps.google.com/mapfiles/kml/paddle/grn-blank.png',
+                      'http://maps.google.com/mapfiles/kml/paddle/red-blank.png',
+                      'http://maps.google.com/mapfiles/kml/paddle/wht-blank.png',
+                      'http://maps.google.com/mapfiles/kml/paddle/orange-blank.png',
+                      'http://maps.google.com/mapfiles/kml/paddle/purple-blank.png',
+                      'http://maps.google.com/mapfiles/kml/paddle/pink-blank.png'];
+var GMAP_ICON_INDEX = 0;
+
 Ext.onReady(function() {
 
     // Ext quicktips - check out <span qtip="blah blah"></span> around pretty much anything.
@@ -39,8 +48,19 @@ Ext.onReady(function() {
 
         //Only add if the record isn't already there
         if (!activeLayerRec) {
+            //Only WFS and 'Reports' layers have icons
+            var iconUrl = null;
+            var totalWFS = cswRecord.getFilteredOnlineResources('WFS').length;
+            var totalWCS = cswRecord.getFilteredOnlineResources('WCS').length;
+            var totalWMS = cswRecord.getFilteredOnlineResources('WMS').length;
+            var totalWWW = cswRecord.getFilteredOnlineResources('WWW').length;
+            if ((totalWFS > 0) ||
+               (totalWCS === 0 && totalWMS === 0 && totalWWW > 0)) {
+                iconUrl = GMAP_ICON_LIST[GMAP_ICON_INDEX++ % GMAP_ICON_LIST.length];
+            }
+
             //add to active layers (At the top of the Z-order)
-            activeLayerRec = activeLayersStore.addCSWRecord(cswRecord);
+            activeLayerRec = activeLayersStore.addCSWRecord(cswRecord, iconUrl);
 
             //invoke this layer as being checked
             activeLayerCheckHandler(activeLayerRec, defaultVisibility, false, deferLayerLoad);
@@ -551,9 +571,10 @@ Ext.onReady(function() {
                                     parseFloat(geoEl.eastBoundLongitude));
 
                             var icon = new GIcon(G_DEFAULT_ICON, activeLayerRecord.getIconUrl());
+                            icon.iconSize = new GSize(32, 32);
+                            icon.iconAnchor = new GPoint(16, 32);
+                            icon.infoWindowAnchor = new GPoint(16, 32);
                             icon.shadow = null;
-                            //icon.iconSize =
-                            //icon.iconAnchor =
 
                             var marker = new GMarker(point, {icon: icon});
                             marker.activeLayerRecord = activeLayerRecord.internalRecord;
@@ -792,9 +813,11 @@ Ext.onReady(function() {
 
                 if (jsonResponse.success) {
                     var icon = new GIcon(G_DEFAULT_ICON, activeLayerRecord.getIconUrl());
-                    //icon.iconSize
-                    //icon.iconAnchor
-                    //icon.infoWindowAnchor
+                    //all icons in GMAP_ICON_LIST are the same size
+                    icon.iconSize = new GSize(32, 32);
+                    icon.iconAnchor = new GPoint(16, 32);
+                    icon.infoWindowAnchor = new GPoint(16, 32);
+
 
                     //TODO: This is a hack to remove marker shadows. Eventually it should be
                     // put into an external config file or become a session-based preference.

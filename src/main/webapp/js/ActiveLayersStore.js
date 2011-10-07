@@ -45,12 +45,15 @@ Ext.extend(ActiveLayersStore, Ext.data.Store, {
      * Adds the specified CSWRecord object to this datastore (Duplicate ID's will override existing records)
      *
      * Returns the ActiveLayersRecord that was added
+     * @param iconUrl [Optional] String URL of the icon
      */
-    addCSWRecord		: function (cswRecord) {
+    addCSWRecord		: function (cswRecord, iconUrl) {
         var keyIconHtml = null;
 
-        //If we have WMS component(s) we include the 'key' icon
-        if (cswRecord.getFilteredOnlineResources('WMS').length > 0) {
+        if (iconUrl) {
+            keyIconHtml = String.format('<img width="16" height="16" src="{0}">', iconUrl);
+        } else if (cswRecord.getFilteredOnlineResources('WMS').length > 0) {
+            //If we have WMS component(s) we include the 'key' icon
             keyIconHtml = '<img width="16" height="16" src="img/key.png">';
         }
 
@@ -60,7 +63,7 @@ Ext.extend(ActiveLayersStore, Ext.data.Store, {
             description	: cswRecord.getDataIdentificationAbstract(),
             proxyUrl	: null,
             cswRecords	: [cswRecord],
-            iconUrl		: null,
+            iconUrl		: iconUrl,
             serviceEndpoints : null,
             includeEndpoints : false,
             keyIconHtml	: keyIconHtml,
