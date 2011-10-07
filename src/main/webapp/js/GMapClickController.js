@@ -1,4 +1,75 @@
 
+var genericParserOpenWindow = function(map, overlay, parentOnlineResource, rootCfg) {
+    //Lets extract the ID and then lookup the parent record
+    //Assumption - We are only interested in the first WFS record
+    var gmlID = overlay.title;
+    var wfsUrl = parentOnlineResource.url;
+    var wfsTypeName = parentOnlineResource.name;
+
+    //Open an info window with a simple HTML div. This will be the 'frame' that the window contents
+    //will be rendered to (after it loads)
+    var maxWidth = 600;
+    var maxHeight = 300;
+    var divId = 'generic-parser-popup';
+    var html = '<html><body><div id="' + divId + '" style="width: ' + maxWidth + 'px; height: ' + maxHeight  +'px;"></div></body></html>';
+    var loc = null;
+    if (overlay instanceof GMarker) {
+        loc = overlay;
+    } else {
+        loc = overlay.getBounds().getCenter();
+    }
+    var params = {
+        divId : divId,
+        maxWidth : maxWidth,
+        maxHeight : maxHeight,
+        wfsUrl : wfsUrl,
+        wfsTypeName : wfsTypeName,
+        gmlID : gmlID
+    };
+    var infoWindowParams = undefined;
+
+    //When the window opens, render a generic parser Ext JS panel to the div
+    mapInfoWindowManager.openInfoWindow(loc, html,infoWindowParams, function(map, loc, params) {
+
+        //Also ensure that the user sees a loading icon instead of a blank popup
+        var loadMask = new Ext.LoadMask(params.divId, {
+            removeMask : true
+        });
+        loadMask.show();
+
+        if (!rootCfg) {
+            rootCfg = {};
+        }
+        Ext.apply(rootCfg, {
+            renderTo : params.divId, //This is crucial, it ensures we bind our parsed component to our empty div
+            width : params.maxWidth,
+            height : params.maxHeight,
+            autoScroll : true
+        });
+
+        //Before we can render our component we need to have the WFS response
+        var wfsParser = new GenericParser.WFSParser({
+            wfsUrl : params.wfsUrl,
+            typeName : params.wfsTypeName,
+            featureId : params.gmlID,
+            rootCfg : rootCfg
+        });
+
+        //Make the request and on response hide our loading / show any errors
+        wfsParser.makeWFSRequest(function(wfsParser, rootCmp) {
+            loadMask.hide();
+            if (!rootCmp) {
+                Ext.MessageBox.show({
+                    buttons : Ext.MessageBox.OK,
+                    icon : Ext.MessageBox.WARNING,
+                    msg : 'There was an error requesting information about this feature. Please try again later.',
+                    title : 'Warning'
+                });
+            }
+        });
+    }, params);
+};
+
 //Returns true if the click has originated from a generic parser layer
 var genericParserClickHandler = function (map, overlay, latlng, parentOnlineResource) {
     if (overlay === null || !overlay.description) {
@@ -11,73 +82,8 @@ var genericParserClickHandler = function (map, overlay, latlng, parentOnlineReso
 
     //The generic parser stamps the description with a specific string followed by the gml:id of the node
     var genericParserString = 'GENERIC_PARSER:';
-
     if (overlay.description.indexOf(genericParserString) === 0) {
-
-        //Lets extract the ID and then lookup the parent record
-        //Assumption - We are only interested in the first WFS record
-        var gmlID = overlay.description.substring(genericParserString.length);
-        var wfsUrl = parentOnlineResource.url;
-        var wfsTypeName = parentOnlineResource.name;
-
-        //Open an info window with a simple HTML div. This will be the 'frame' that the window contents
-        //will be rendered to (after it loads)
-        var maxWidth = 600;
-        var maxHeight = 300;
-        var divId = 'generic-parser-popup';
-        var html = '<html><body><div id="' + divId + '" style="width: ' + maxWidth + 'px; height: ' + maxHeight  +'px;"></div></body></html>';
-        var loc = null;
-        if (overlay instanceof GMarker) {
-            loc = overlay;
-        } else {
-            loc = overlay.getBounds().getCenter();
-        }
-        var params = {
-            divId : divId,
-            maxWidth : maxWidth,
-            maxHeight : maxHeight,
-            wfsUrl : wfsUrl,
-            wfsTypeName : wfsTypeName,
-            gmlID : gmlID
-        };
-        var infoWindowParams = undefined;
-
-        //When the window opens, render a generic parser Ext JS panel to the div
-        mapInfoWindowManager.openInfoWindow(loc, html,infoWindowParams, function(map, loc, params) {
-
-            //Also ensure that the user sees a loading icon instead of a blank popup
-            var loadMask = new Ext.LoadMask(params.divId, {
-                removeMask : true
-            });
-            loadMask.show();
-
-            //Before we can render our component we need to have the WFS response
-            var wfsParser = new GenericParser.WFSParser({
-                wfsUrl : params.wfsUrl,
-                typeName : params.wfsTypeName,
-                featureId : params.gmlID,
-                rootCfg : {
-                    renderTo : params.divId, //This is crucial, it ensures we bind our parsed component to our empty div
-                    width : params.maxWidth,
-                    height : params.maxHeight,
-                    autoScroll : true
-                }
-            });
-
-            //Make the request and on response hide our loading / show any errors
-            wfsParser.makeWFSRequest(function(wfsParser, rootCmp) {
-                loadMask.hide();
-                if (!rootCmp) {
-                    Ext.MessageBox.show({
-                        buttons : Ext.MessageBox.OK,
-                        icon : Ext.MessageBox.WARNING,
-                        msg : 'There was an error requesting information about this feature. Please try again later.',
-                        title : 'Warning'
-                    });
-                }
-            });
-        }, params);
-
+        genericParserOpenWindow(map, overlay, parentOnlineResource)
         return true;
     }
 
@@ -167,6 +173,57 @@ var gMapClickController = function(map, overlay, latlng, overlayLatlng, activeLa
                 if (wfsUrl.indexOf('pressuredb') >= 0) {
                     var infoWindow = new PressureDbInfoWindow(map,overlay, wfsUrl);
                     infoWindow.show();
+                } else if (wfsUrl.indexOf('ga') >= 0) {
+                    //THIS IS ALL A TEMPORARY HACK
+                    genericParserOpenWindow(map, overlay, parentOnlineResource, {
+                        buttonAlign : 'right',
+                        buttons : [{
+                            xtype : 'button',
+                            text : 'Chemistry Details',
+                            iconCls : 'info',
+                            handler : function() {
+                                var boreholeId = overlay.title;
+                                var locSpecimenFeatureId = '';
+                                switch(boreholeId) {
+                                case 'gsml.borehole.15704':
+                                    locSpecimenFeatureId = 'sa.samplingfeaturecollection.5727.organicgeochemistry';
+                                    break;
+                                case 'gsml.borehole.12043':
+                                    locSpecimenFeatureId = 'sa.samplingfeaturecollection.5672.organicgeochemistry';
+                                    break;
+                                case 'gsml.borehole.11893':
+                                    locSpecimenFeatureId = 'sa.samplingfeaturecollection.5775.organicgeochemistry';
+                                    break;
+                                default:
+                                    locSpecimenFeatureId = 'sa.samplingfeaturecollection.0000.organicgeochemistry';
+                                    break;
+                                }
+
+
+                                var wfsParser = new GenericParser.WFSParser({
+                                    wfsUrl : parentOnlineResource.url,
+                                    typeName : 'sa:SamplingFeatureCollection',
+                                    featureId : locSpecimenFeatureId,
+                                    rootCfg : {
+                                        autoScroll : true
+                                    }
+                                });
+
+                                wfsParser.makeWFSRequest(function(wfsParser, rootCmp) {
+                                    if (rootCmp) {
+                                        var popup = new Ext.Window({
+                                            title: 'Specimen Chemical Analyses',
+                                            layout : 'fit',
+                                            width : 1000,
+                                            height : 500,
+                                            items : [rootCmp]
+                                        });
+                                        popup.show();
+                                    }
+                                });
+                            }
+                        }]
+                    });
                 } else {
                     var infoWindow = new NvclInfoWindow(map,overlay, wfsUrl);
                     infoWindow.show();
