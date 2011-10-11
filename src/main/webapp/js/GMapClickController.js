@@ -175,6 +175,11 @@ var gMapClickController = function(map, overlay, latlng, overlayLatlng, activeLa
                     infoWindow.show();
                 } else if (wfsUrl.indexOf('ga') >= 0) {
                     //THIS IS ALL A TEMPORARY HACK
+                    if (overlay.title.indexOf('gsml.borehole') >= 0) {
+                        // already good....
+                    } else {
+                        overlay.title = 'gsml.borehole.'+ overlay.title;
+                    }
                     genericParserOpenWindow(map, overlay, parentOnlineResource, {
                         buttonAlign : 'right',
                         buttons : [{
@@ -184,20 +189,8 @@ var gMapClickController = function(map, overlay, latlng, overlayLatlng, activeLa
                             handler : function() {
                                 var boreholeId = overlay.title;
                                 var locSpecimenFeatureId = '';
-                                switch(boreholeId) {
-                                case 'gsml.borehole.15704':
-                                    locSpecimenFeatureId = 'sa.samplingfeaturecollection.5727.organicgeochemistry';
-                                    break;
-                                case 'gsml.borehole.12043':
-                                    locSpecimenFeatureId = 'sa.samplingfeaturecollection.5672.organicgeochemistry';
-                                    break;
-                                case 'gsml.borehole.11893':
-                                    locSpecimenFeatureId = 'sa.samplingfeaturecollection.5775.organicgeochemistry';
-                                    break;
-                                default:
-                                    locSpecimenFeatureId = 'sa.samplingfeaturecollection.0000.organicgeochemistry';
-                                    break;
-                                }
+                                locSpecimenFeatureId = 'sa.samplingfeaturecollection.' + boreholeId.substr(boreholeId.lastIndexOf('.')+1) + '.organicgeochemistry';
+                                // 'sa.samplingfeaturecollection.0000.organicgeochemistry';
 
 
                                 var wfsParser = new GenericParser.WFSParser({
