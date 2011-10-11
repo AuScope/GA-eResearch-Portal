@@ -22,7 +22,7 @@ GenericParser.Factory.LocatedSpecimenFactory = Ext.extend(GenericParser.Factory.
     parseNode : function(domNode, wfsUrl, rootCfg) {
         //Lookup various fields via xPath
         var gmlId = this._evaluateXPathString(domNode, '@gml:id');
-        var allAnalyteNodes = this._evaluateXPathNodeArray(domNode, 'sa:relatedObservation/om:Observation/om:result/swe:Quantity/gml:name');
+        var allAnalyteNodes = this._evaluateXPathNodeArray(domNode, 'sa:relatedObservation/om:Observation/om:result/swe:Quantity/gml:name[not(@*)]');
         var materialClass = this._evaluateXPathString(domNode, 'sa:materialClass');
 
         if (!materialClass) {
