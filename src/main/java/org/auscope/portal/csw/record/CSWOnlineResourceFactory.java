@@ -44,7 +44,12 @@ public abstract class CSWOnlineResourceFactory {
         } catch (MalformedURLException ex) {
             //TODO: URLs may now be malformed but we don't want to stop processing because of it
             // as we are now allowing for multiple URLs. Ignore for now.
-            //	throw new IllegalArgumentException(String.format("malformed url '%1$s'",temp.getTextContent()), ex);
+            // throw new IllegalArgumentException(String.format("malformed url '%1$s'",temp.getTextContent()), ex);
+            try {
+                url = new URL ("file:" + urlString.replace('\\', '/').replace(':', '/'));
+            } catch (MalformedURLException e) {
+                // pass
+            }
         }
 
         protocol = (String) protocolXpath.evaluate(node, XPathConstants.STRING);
