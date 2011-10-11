@@ -78,9 +78,18 @@ GenericParser.WFSParser = Ext.extend(Ext.util.Observable, {
                     callback(wfsParser, null);
                     return;
                 }
+                
+                var wfsResponseRoot = null;
 
                 //Skip the opening containing elements (as they are constant for WFS)
-                var wfsResponseRoot = xmlDocument.documentElement.childNodes[0].childNodes[0];
+                wfsResponseRoot = xmlDocument.documentElement.childNodes[0].childNodes[0];
+                
+                if (!wfsResponseRoot)  {
+                    alert('No data matching your search found in the WFS');
+                    callback(wfsParser, null);
+                    return;
+                }
+               
 
                 //Parse our response, pass it along to the callback
                 var rootComponent = wfsParser.parser.parseNode(wfsResponseRoot, wfsParser.wfsUrl, wfsParser.rootCfg);
