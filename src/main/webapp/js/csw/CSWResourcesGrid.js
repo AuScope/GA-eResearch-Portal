@@ -115,7 +115,9 @@ CSWResourcesGrid = Ext.extend(Ext.grid.GridPanel, {
 
                 //Ensure there is a title (even it is just '<Untitled>'
                 if (!name || name.length === 0) {
-                    name = '&gt;Untitled&lt;';
+                    //name = '&gt;Untitled&lt;';
+					//Ugly Override for file://<host>/<path> and mozilla based engine.
+					name = onlineRes.url;
                 }
 
                 //Adjust our name with our service type (if appopriate)
@@ -139,7 +141,7 @@ CSWResourcesGrid = Ext.extend(Ext.grid.GridPanel, {
 
                 switch(record.get('type')) {
                 case 'WWW':
-                    return '<a target="_blank" href="' + onlineRes.url + '"><b>' + name + '</b></a><br/><span style="color:#555;">' + description + '</span>';
+                    return '<div style="white-space:normal !important;"><a target="_blank" href="' + onlineRes.url + '"><b>' + name + '</b></a></div><br/><span style="color:#555;">' + description + '</span>';
                 default:
                     return '<b>' + name + '</b><br/><span style="color:#555;">' + description + '</span>';
                 }
