@@ -1,11 +1,6 @@
 package org.auscope.portal.server.web.controllers;
 
 import java.io.InputStream;
-import java.net.ConnectException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -16,10 +11,6 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.URI;
-import org.auscope.portal.csw.record.CSWOnlineResource;
-import org.auscope.portal.csw.record.CSWOnlineResourceImpl;
-import org.auscope.portal.csw.record.CSWRecord;
-import org.auscope.portal.nvcl.NVCLNamespaceContext;
 import org.auscope.portal.server.domain.filter.FilterBoundingBox;
 import org.auscope.portal.server.util.GmlToKml;
 import org.auscope.portal.server.web.WFSGetFeatureMethodMaker;

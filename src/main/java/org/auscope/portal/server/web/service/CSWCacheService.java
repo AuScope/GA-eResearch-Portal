@@ -15,8 +15,6 @@ import org.auscope.portal.csw.CSWGetRecordResponse;
 import org.auscope.portal.csw.CSWMethodMakerGetDataRecords;
 import org.auscope.portal.csw.CSWMethodMakerGetDataRecords.ResultType;
 import org.auscope.portal.csw.CSWThreadExecutor;
-import org.auscope.portal.csw.record.CSWOnlineResource;
-import org.auscope.portal.csw.record.CSWOnlineResource.OnlineResourceType;
 import org.auscope.portal.csw.record.CSWRecord;
 import org.auscope.portal.server.domain.ows.OWSExceptionParser;
 import org.auscope.portal.server.util.DOMUtil;

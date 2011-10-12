@@ -12,7 +12,11 @@ import org.w3c.dom.Node;
  */
 public class SingleValue implements ValueEnumType {
 
-    private String type;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -7534501999759206072L;
+	private String type;
     private String value;
 
     public SingleValue(Node node, XPath xPath) throws Exception {

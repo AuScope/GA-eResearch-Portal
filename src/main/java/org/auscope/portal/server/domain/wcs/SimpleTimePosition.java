@@ -16,7 +16,11 @@ import org.w3c.dom.Node;
  */
 public class SimpleTimePosition implements TemporalDomain {
 
-    private Date timePosition;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 3082569116319981420L;
+	private Date timePosition;
     private String type;
 
     public String getType() {

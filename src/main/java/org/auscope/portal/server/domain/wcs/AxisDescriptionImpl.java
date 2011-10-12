@@ -13,7 +13,11 @@ import org.w3c.dom.NodeList;
  *
  */
 public class AxisDescriptionImpl implements AxisDescription {
-    private String description;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -9218926149355816414L;
+	private String description;
     private String name;
     private String label;
     private ValueEnumType[] values;

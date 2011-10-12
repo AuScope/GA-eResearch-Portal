@@ -12,7 +12,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
 import junit.framework.Assert;
-
 import net.sf.saxon.xpath.XPathFactoryImpl;
 
 import org.auscope.portal.Util;

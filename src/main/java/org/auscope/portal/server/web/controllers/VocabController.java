@@ -254,11 +254,11 @@ public class VocabController extends BasePortalController {
 
         return generateJSONResponseMAV(true, dataItems, "");
     }
-    
+
 	/**
 	 * this is just an example to show we can display specific filter for
 	 * specific theme filtering
-	 * 
+	 *
 	 * @param
 	 */
 	@RequestMapping("getSensorType.do")

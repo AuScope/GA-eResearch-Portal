@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.auscope.portal.csw.record.CSWRecord;
 import org.auscope.portal.server.util.PortalPropertyPlaceholderConfigurer;
 import org.auscope.portal.server.web.service.CSWCacheService;
 import org.auscope.portal.server.web.view.ViewCSWRecordFactory;

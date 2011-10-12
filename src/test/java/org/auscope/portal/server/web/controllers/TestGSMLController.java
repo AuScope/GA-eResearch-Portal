@@ -10,8 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-
-
 import net.sf.json.JSONObject;
 
 import org.apache.commons.httpclient.HttpClient;

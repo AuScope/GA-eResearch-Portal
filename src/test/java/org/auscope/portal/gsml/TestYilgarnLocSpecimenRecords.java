@@ -1,7 +1,7 @@
 package org.auscope.portal.gsml;
 
-import org.junit.Test;
 import org.junit.Assert;
+import org.junit.Test;
 
 public class TestYilgarnLocSpecimenRecords {
 	

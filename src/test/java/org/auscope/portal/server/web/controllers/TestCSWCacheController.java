@@ -1,7 +1,5 @@
 package org.auscope.portal.server.web.controllers;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -9,9 +7,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.auscope.portal.csw.record.CSWRecord;
 import org.auscope.portal.server.util.PortalPropertyPlaceholderConfigurer;

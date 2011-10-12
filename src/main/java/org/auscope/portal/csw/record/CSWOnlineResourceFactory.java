@@ -3,7 +3,6 @@ package org.auscope.portal.csw.record;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
@@ -42,9 +41,9 @@ public abstract class CSWOnlineResourceFactory {
                 url = new URL(urlString);
             }
         } catch (MalformedURLException ex) {
-            //TODO: URLs may now be malformed but we don't want to stop processing because of it
-            // as we are now allowing for multiple URLs. Ignore for now.
-            // throw new IllegalArgumentException(String.format("malformed url '%1$s'",temp.getTextContent()), ex);
+            // TODO: URLs may now be malformed but we don't want to stop processing because of it
+            // as we are now allowing for multiple URLs.
+            // HACK: throw new IllegalArgumentException(String.format("malformed url '%1$s'",temp.getTextContent()), ex);
             try {
                 url = new URL ("file:" + urlString.replace('\\', '/').replace(':', '/'));
             } catch (MalformedURLException e) {

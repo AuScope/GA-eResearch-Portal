@@ -1,19 +1,17 @@
 package org.auscope.portal.server.web.controllers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.auscope.portal.csw.CSWGetDataRecordsFilter;
+import org.auscope.portal.csw.CSWGetDataRecordsFilter.KeywordMatchType;
 import org.auscope.portal.csw.CSWGetRecordResponse;
 import org.auscope.portal.csw.record.CSWRecord;
-import org.auscope.portal.csw.CSWGetDataRecordsFilter.KeywordMatchType;
 import org.auscope.portal.server.domain.filter.FilterBoundingBox;
 import org.auscope.portal.server.web.service.CSWFilterService;
 import org.auscope.portal.server.web.service.CSWServiceItem;
 import org.auscope.portal.server.web.view.ViewCSWRecordFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -10,17 +10,21 @@ import java.awt.Point;
  *
  */
 public class KnownLayerKeywords extends KnownLayer {
-    protected String descriptiveKeyword;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7483152407304344592L;
+	protected String descriptiveKeyword;
     protected String iconUrl;
     protected Point iconAnchor;
     protected Dimension iconSize;
-    
+
     /**
      * @param title a descriptive title of this layer
      * @param description an extended description of this layer
-     * @param descriptiveKeyword the descriptive keyword used to identify CSW records 
+     * @param descriptiveKeyword the descriptive keyword used to identify CSW records
      */
-    public KnownLayerKeywords(String title, String description, String descriptiveKeyword, 
+    public KnownLayerKeywords(String title, String description, String descriptiveKeyword,
     		String iconUrl, Point iconAnchor, Dimension iconSize) {
         this.id = "KnownLayerKeywords-" + descriptiveKeyword;
         this.title = title;
@@ -40,18 +44,18 @@ public class KnownLayerKeywords extends KnownLayer {
     }
 
     /**
-     * 
+     *
      * @return
      */
     public String getIconUrl() {
     	return iconUrl;
     }
-    
+
     /**
-     * Gets the pixel coordinates relative to the top left corner of the icon 
+     * Gets the pixel coordinates relative to the top left corner of the icon
      * image at which this icon is anchored to the map.
      * Can be null.
-     * 
+     *
      * @return pixel coordinates at which this icon is anchored to the map.
      */
     public Point getIconAnchor() {
@@ -61,11 +65,11 @@ public class KnownLayerKeywords extends KnownLayer {
             return new Point(iconAnchor);
         }
     }
-    
+
     /**
      * Gets the size in pixels of the icon.
      * Can be null.
-     * 
+     *
      * @return size in pixels of the icon.
      */
     public Dimension getIconSize() {
@@ -75,7 +79,7 @@ public class KnownLayerKeywords extends KnownLayer {
         	return iconSize;
         }
     }
-    
+
     /**
      * Sets the descriptive keyword used to identify CSW records
      * @param descriptiveKeyword the descriptiveKeyword to set
@@ -83,6 +87,6 @@ public class KnownLayerKeywords extends KnownLayer {
     public void setDescriptiveKeyword(String descriptiveKeyword) {
         this.descriptiveKeyword = descriptiveKeyword;
     }
-    
-    
+
+
 }

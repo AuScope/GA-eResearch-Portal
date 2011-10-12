@@ -1,17 +1,8 @@
 package org.auscope.portal.server.web.service;
 
-import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
-import org.auscope.portal.csw.record.CSWOnlineResource;
-import org.auscope.portal.csw.record.CSWOnlineResourceImpl;
-import org.auscope.portal.csw.record.CSWRecord;
-import org.auscope.portal.csw.record.CSWOnlineResource.OnlineResourceType;
 import org.auscope.portal.mineraloccurrence.BoreholeFilter;
-import org.auscope.portal.nvcl.NVCLNamespaceContext;
 import org.auscope.portal.server.domain.filter.FilterBoundingBox;
 import org.auscope.portal.server.domain.filter.IFilter;
 import org.auscope.portal.server.web.WFSGetFeatureMethodMaker;

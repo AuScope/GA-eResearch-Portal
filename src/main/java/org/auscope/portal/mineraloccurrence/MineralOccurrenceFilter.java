@@ -209,7 +209,7 @@ public class MineralOccurrenceFilter extends AbstractFilter {
     	if (measureType == null) {
     		return MeasureTypes.NONE;
     	}
-    	
+
         if (measureType.equals("Resource")) {
             return MeasureTypes.RESOURCE;
         } else if (measureType.equals("Reserve")) {

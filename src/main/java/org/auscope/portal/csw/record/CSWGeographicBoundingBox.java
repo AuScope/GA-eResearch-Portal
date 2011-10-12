@@ -2,10 +2,8 @@ package org.auscope.portal.csw.record;
 
 import java.io.Serializable;
 
-import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
 
 import org.auscope.portal.csw.CSWNamespaceContext;
 import org.auscope.portal.server.util.DOMUtil;
@@ -18,7 +16,11 @@ import org.w3c.dom.Node;
  */
 public class CSWGeographicBoundingBox implements Serializable, CSWGeographicElement{
 
-    double westBoundLongitude;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7164960116159961589L;
+	double westBoundLongitude;
     double eastBoundLongitude;
     double southBoundLatitude;
     double northBoundLatitude;

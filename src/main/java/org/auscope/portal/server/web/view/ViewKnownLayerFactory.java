@@ -2,8 +2,6 @@ package org.auscope.portal.server.web.view;
 
 import java.awt.Dimension;
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.auscope.portal.server.web.KnownLayer;
 import org.auscope.portal.server.web.KnownLayerKeywords;
@@ -37,17 +35,17 @@ public class ViewKnownLayerFactory {
 
 		return obj;
 	}
-	
+
 	private ModelMap baseToView(KnownLayer k) {
 	    ModelMap obj = new ModelMap();
-	    
+
 	    obj.put("title", k.getTitle());
         obj.put("hidden", k.isHidden());
         obj.put("description",k.getDescription());
         obj.put("id", k.getId());
         obj.put("group", k.getGroup());
-        
-        
+
+
         return obj;
 	}
 

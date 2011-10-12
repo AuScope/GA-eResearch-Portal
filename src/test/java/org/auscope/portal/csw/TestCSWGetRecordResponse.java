@@ -1,12 +1,9 @@
 package org.auscope.portal.csw;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
 
 import org.auscope.portal.csw.record.CSWRecord;
 import org.auscope.portal.server.web.service.CSWServiceItem;
@@ -14,7 +11,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 /**
  * Unit tests for CSWGetRecordResponse

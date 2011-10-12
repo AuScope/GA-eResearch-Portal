@@ -1,7 +1,5 @@
 package org.auscope.portal.server.web.controllers;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.httpclient.HttpMethodBase;
