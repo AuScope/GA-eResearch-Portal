@@ -30,6 +30,8 @@ public class YilgarnLocSpecimenRecords {
     String analyteName;
     String analyteValue;
     String uom;
+    String nameVocabKey;
+    String uomVocabKey;
 
 
     public YilgarnLocSpecimenRecords(Node node, XPath xPath ) throws XPathExpressionException{
@@ -71,6 +73,10 @@ public class YilgarnLocSpecimenRecords {
         tempNode = (Node)xPath.evaluate(quantityNameExpression, node, XPathConstants.NODE);
         analyteName = tempNode != null ? tempNode.getTextContent() : "";
 
+        String nameVocabKeyExpression = "om:Observation/om:result/swe:Quantity/gml:name[@codeSpace='http://geoscience.gov.au/geochemistry/property/']";
+        tempNode = (Node)xPath.evaluate(nameVocabKeyExpression, node, XPathConstants.NODE);
+        nameVocabKey=tempNode != null ? tempNode.getTextContent() : "";
+
         String quantityValueExpression = "om:Observation/om:result/swe:Quantity/swe:value";
         tempNode = (Node)xPath.evaluate(quantityValueExpression, node, XPathConstants.NODE);
         analyteValue = tempNode != null ? tempNode.getTextContent() : "";
@@ -79,6 +85,7 @@ public class YilgarnLocSpecimenRecords {
         tempNode = (Node)xPath.evaluate(uomExpression, node, XPathConstants.NODE);
         String urnUOM = tempNode != null ? tempNode.getTextContent() : "";
         urnUOM.trim();
+        uomVocabKey=urnUOM;
 
         if(urnUOM.indexOf("ppm") != -1){
             uom = "ppm";
@@ -86,7 +93,7 @@ public class YilgarnLocSpecimenRecords {
         else if(urnUOM.indexOf("ppb") != -1){
             uom = "ppb";
         }
-        else if(urnUOM.indexOf("%") != -1){
+        else if(urnUOM.indexOf("wt_pc") != -1 || urnUOM.indexOf("%") != -1){
             uom = "%";
         }else
             uom = "null";
@@ -134,6 +141,20 @@ public class YilgarnLocSpecimenRecords {
     {
         return uom;
     }
+    public String getNameVocabKey() {
+        return nameVocabKey;
+    }
+    public void setNameVocabKey(String nameVocabKey) {
+        this.nameVocabKey = nameVocabKey;
+    }
+
+    public void setUomVocabKey(String uomVocabKey) {
+        this.uomVocabKey = uomVocabKey;
+    }
+
+    public String getUomVocabKey() {
+        return uomVocabKey;
+    }
 
     public static YilgarnLocSpecimenRecords[] parseRecords(String gmlResponse)throws Exception{
         YilgarnLocSpecimenRecords[] records = null;
@@ -171,5 +192,11 @@ public class YilgarnLocSpecimenRecords {
         String materialDescription = materialDescriptionNode != null ? materialDescriptionNode.getTextContent() : "";
         return materialDescription;
     }
+
+
+
+
+
+
 
 }

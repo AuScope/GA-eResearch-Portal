@@ -17,6 +17,8 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.auscope.portal.gsml.YilgarnLocSpecimenRecords;
+import org.auscope.portal.server.util.PortalPropertyPlaceholderConfigurer;
+import org.auscope.portal.server.web.SISSVocMethodMaker;
 import org.auscope.portal.server.web.WFSGetFeatureMethodMaker;
 import org.auscope.portal.server.web.service.HttpServiceCaller;
 import org.jmock.Expectations;
@@ -41,6 +43,7 @@ public class TestYilgarnLocSpecimenController {
     private YilgarnLocSpecimenController yilgarnLocSpecimenController;
     private HttpServletResponse mockHttpResponse = context.mock(HttpServletResponse.class);
     private WFSGetFeatureMethodMaker mockMethodMaker = context.mock(WFSGetFeatureMethodMaker.class);
+    private PortalPropertyPlaceholderConfigurer portalPropertyConfigurer = context.mock(PortalPropertyPlaceholderConfigurer.class);
 
     final class MyServletOutputStream extends ServletOutputStream {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -56,7 +59,7 @@ public class TestYilgarnLocSpecimenController {
 
     @Before
     public void setup(){
-        yilgarnLocSpecimenController = new YilgarnLocSpecimenController(httpServiceCaller, mockMethodMaker);
+        yilgarnLocSpecimenController = new YilgarnLocSpecimenController(httpServiceCaller, mockMethodMaker,portalPropertyConfigurer);
     }
 
 
@@ -166,6 +169,33 @@ public class TestYilgarnLocSpecimenController {
             Assert.assertTrue(ze.getName().endsWith("operation-failed.xml"));
         }
         zipInputStream.close();
+    }
+
+
+    @Test
+    public void vocabRDFtoHTML() throws Exception{
+
+        final String nameLabel = "nameLabel";
+        final String vocabRepo = "test-repo";
+        final String vocabUrl = "test-repo-url.com.au";
+        final String rdfReply ="<rdf>test<rdf>";
+        final SISSVocMethodMaker sissVocMake=context.mock(SISSVocMethodMaker.class);
+        final HttpMethodBase methodBase=context.mock(HttpMethodBase.class);
+        final ServletOutputStream out=context.mock(ServletOutputStream.class);
+
+        context.checking(new Expectations() {{
+            oneOf(portalPropertyConfigurer).resolvePlaceholder("HOST.vocabService.url");will(returnValue(vocabUrl));
+            oneOf(sissVocMake).getConceptByUriMethod(vocabUrl, vocabRepo, nameLabel);will(returnValue(methodBase));
+            oneOf(httpServiceCaller).getHttpClient();
+            oneOf(httpServiceCaller).getMethodResponseAsString(with(any(HttpMethodBase.class)), with(any(HttpClient.class)));will(returnValue(rdfReply));
+            oneOf(mockHttpResponse).setContentType("text/html; charset=utf-8");
+            oneOf(mockHttpResponse).getOutputStream();will(returnValue(out));
+            oneOf(out).write(rdfReply.getBytes());
+        }});
+
+        yilgarnLocSpecimenController.vocabRDFtoHTML( mockHttpRequest,mockHttpResponse,nameLabel,vocabRepo);
+
+
     }
 }
 

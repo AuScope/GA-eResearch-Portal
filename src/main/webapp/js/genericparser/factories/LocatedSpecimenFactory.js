@@ -16,6 +16,7 @@ GenericParser.Factory.LocatedSpecimenFactory = Ext.extend(GenericParser.Factory.
                this._getNodeLocalName(domNode) === 'LocatedSpecimen';
     },
 
+
     /**
      * Generates a panel containing all located specimen observations
      */
@@ -60,7 +61,9 @@ GenericParser.Factory.LocatedSpecimenFactory = Ext.extend(GenericParser.Factory.
                     'labDetails',
                     'analysisDate',
                     'preparationDetails',
-                    'recordIndex'
+                    'recordIndex',
+                    'nameVocabKey',
+                    'uomVocabKey'
                 ]
             })
         });
@@ -108,6 +111,9 @@ GenericParser.Factory.LocatedSpecimenFactory = Ext.extend(GenericParser.Factory.
                                         records[i].labDetails,
                                         records[i].date,
                                         records[i].preparationDetails,
+                                        records[i].recordIndex,
+                                        records[i].nameVocabKey,
+                                        records[i].uomVocabKey,
                                         i
                                     ]);
                             }
@@ -137,6 +143,7 @@ GenericParser.Factory.LocatedSpecimenFactory = Ext.extend(GenericParser.Factory.
                         dataIndex: 'analyteValue',
                         width: 100
                     },{
+                        id: 'uom',
                         header: 'Unit Of Measure',
                         dataIndex: 'uom',
                         width: 100
@@ -183,7 +190,48 @@ GenericParser.Factory.LocatedSpecimenFactory = Ext.extend(GenericParser.Factory.
                     }),
                     {xtype: 'tbfill'},
                     'Material Description: ',
-                    materialClass]
+                    materialClass
+                   ],
+
+                listeners: {
+                    cellclick: function(grid, rowIndex, columnIndex, e){
+                        var record = grid.getStore().getAt(rowIndex);
+                        // Get field name for the column
+                        var fieldName = grid.getColumnModel().getColumnId(columnIndex);
+                        var label='';
+                        var repo='';
+                        if(fieldName=='analyteName'){
+                            label = record.get('nameVocabKey');
+                            repo='ga-properties'
+                        }else if(fieldName=='uom'){
+                            label = record.get('uomVocabKey');
+                            repo='ga-units'
+                        }
+                        if(label != ''){
+                            win = new Ext.Window({
+                                title		: 'Vocabulary RDF',
+                                autoHeight:    true,
+                                items: [{
+                                    xtype 	: 'panel',
+                                    bodyStyle   : 'padding:0px',
+                                    autoScroll	: true,
+                                    autoDestroy : true,
+                                    autoLoad : {
+                                        url: 'vocabRDFtoHTML.do',
+                                        scripts: false,
+                                        params : {
+                                            nameLabel : record.get('nameVocabKey'),
+                                            vocabRepo : repo
+                                        }
+                                    }
+                                }]
+                            });
+
+                            win.show(this);
+                        }
+                    }
+                }
+
             }]
         });
         return new GenericParser.BaseComponent(rootCfg);

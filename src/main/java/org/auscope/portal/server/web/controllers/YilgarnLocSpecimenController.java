@@ -1,6 +1,7 @@
 package org.auscope.portal.server.web.controllers;
 
 
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -18,6 +19,8 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.auscope.portal.gsml.YilgarnLocSpecimenRecords;
+import org.auscope.portal.server.util.PortalPropertyPlaceholderConfigurer;
+import org.auscope.portal.server.web.SISSVocMethodMaker;
 import org.auscope.portal.server.web.WFSGetFeatureMethodMaker;
 import org.auscope.portal.server.web.service.HttpServiceCaller;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,11 +46,15 @@ public class YilgarnLocSpecimenController extends BasePortalController {
     protected final Log logger = LogFactory.getLog(getClass().getName());
     private HttpServiceCaller serviceCaller;
     private WFSGetFeatureMethodMaker methodMaker;
+    private PortalPropertyPlaceholderConfigurer portalPropertyPlaceholderConfigurer;
 
     @Autowired
-    public YilgarnLocSpecimenController(HttpServiceCaller serviceCaller, WFSGetFeatureMethodMaker methodMaker) {
+    public YilgarnLocSpecimenController(HttpServiceCaller serviceCaller,
+            WFSGetFeatureMethodMaker methodMaker,
+            PortalPropertyPlaceholderConfigurer portalPropertyPlaceholderConfigurer) {
         this.serviceCaller = serviceCaller;
         this.methodMaker = methodMaker;
+        this.portalPropertyPlaceholderConfigurer = portalPropertyPlaceholderConfigurer;
     }
 
 
@@ -201,5 +208,29 @@ public class YilgarnLocSpecimenController extends BasePortalController {
         zout.close();
     }
 
+
+    @RequestMapping("/vocabRDFtoHTML.do")
+    public void vocabRDFtoHTML( HttpServletRequest request,
+                                 HttpServletResponse response,
+                                 @RequestParam("nameLabel") String nameLabel,
+                                 @RequestParam("vocabRepo") String vocabRepo){
+
+        try{
+                SISSVocMethodMaker sissVocMethodMaker = new SISSVocMethodMaker();
+                String url = portalPropertyPlaceholderConfigurer.resolvePlaceholder("HOST.vocabService.url");
+                String repository = vocabRepo;
+
+                String responseFromCall = serviceCaller.getMethodResponseAsString(
+                        sissVocMethodMaker.getConceptByUriMethod(url, repository,
+                                nameLabel), serviceCaller.getHttpClient());
+
+                response.setContentType("text/html; charset=utf-8");
+                response.getOutputStream().write(responseFromCall.getBytes());
+
+        }catch(Exception e){
+
+        }
+
+    }
 
 }
