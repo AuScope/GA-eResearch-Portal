@@ -220,7 +220,7 @@ GenericParser.Factory.LocatedSpecimenFactory = Ext.extend(GenericParser.Factory.
                                         url: 'vocabRDFtoHTML.do',
                                         scripts: false,
                                         params : {
-                                            nameLabel : record.get('nameVocabKey'),
+                                            nameLabel : label,
                                             vocabRepo : repo
                                         }
                                     }
