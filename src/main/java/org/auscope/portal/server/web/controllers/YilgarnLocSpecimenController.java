@@ -210,24 +210,25 @@ public class YilgarnLocSpecimenController extends BasePortalController {
 
 
     @RequestMapping("/vocabRDFtoHTML.do")
-    public void vocabRDFtoHTML( HttpServletRequest request,
-                                 HttpServletResponse response,
-                                 @RequestParam("nameLabel") String nameLabel,
-                                 @RequestParam("vocabRepo") String vocabRepo){
+    public void vocabRDFtoHTML(HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam("nameLabel") String nameLabel,
+            @RequestParam("vocabRepo") String vocabRepo) {
 
-        try{
-                SISSVocMethodMaker sissVocMethodMaker = new SISSVocMethodMaker();
-                String url = portalPropertyPlaceholderConfigurer.resolvePlaceholder("HOST.vocabService.url");
-                String repository = vocabRepo;
+        try {
+            SISSVocMethodMaker sissVocMethodMaker = new SISSVocMethodMaker();
+            String url = portalPropertyPlaceholderConfigurer
+                    .resolvePlaceholder("HOST.vocabService.url");
+            String repository = vocabRepo;
 
-                String responseFromCall = serviceCaller.getMethodResponseAsString(
-                        sissVocMethodMaker.getConceptByUriMethod(url, repository,
-                                nameLabel), serviceCaller.getHttpClient());
+            String responseFromCall = serviceCaller.getMethodResponseAsString(
+                    sissVocMethodMaker.getConceptByUriMethod(url, repository,
+                            nameLabel), serviceCaller.getHttpClient());
 
-                response.setContentType("text/html; charset=utf-8");
-                response.getOutputStream().write(responseFromCall.getBytes());
+            response.setContentType("text/html; charset=utf-8");
+            response.getOutputStream().write(responseFromCall.getBytes());
 
-        }catch(Exception e){
+        } catch (Exception e) {
 
         }
 
